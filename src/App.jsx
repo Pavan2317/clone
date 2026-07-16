@@ -1,4 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Routes, Route } from "react-router-dom";
+
+import JobsPage from "./pages/JobsPage";
+
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import PopularSearches from './components/PopularSearches';
@@ -10,23 +14,74 @@ import Testimonials from './components/Testimonials';
 import AppDownload from './components/AppDownload';
 import Footer from './components/Footer';
 
-const App = () => {
+
+function Home({setSearch}) {
+
   return (
-    <div className="min-h-screen bg-white">
+    <>
       <Navbar />
+
       <main>
-        <HeroSection />
+
+        <HeroSection setSearch={setSearch} />
+
         <PopularSearches />
+
         <FeaturedCompanies />
+
         <PopularCategories />
+
         <FeaturedJobs />
+
         <TopHiringCompanies />
+
         <Testimonials />
+
         <AppDownload />
+
       </main>
+
       <Footer />
-    </div>
+
+    </>
   );
-};
+}
+
+
+
+function App() {
+
+  const [search, setSearch] = useState({
+    keyword: "",
+    location: "",
+    experience: ""
+  });
+
+
+  return (
+
+    <Routes>
+
+      <Route
+        path="/"
+        element={
+          <Home setSearch={setSearch} />
+        }
+      />
+
+
+      <Route
+        path="/jobs"
+        element={
+          <JobsPage search={search} />
+        }
+      />
+
+
+    </Routes>
+
+  );
+}
+
 
 export default App;
