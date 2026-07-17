@@ -5,6 +5,7 @@ import ApplyModal from "../components/ApplyModal";
 const JobsPage = ({ search }) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
 
   const filteredJobs = jobs.filter((job) => {
 
@@ -86,21 +87,58 @@ const JobsPage = ({ search }) => {
                 <strong>Experience:</strong> {job.experience}
               </p>
 
-            <button
-  onClick={() => {
-    alert("Button clicked");
-    setIsModalOpen(true);
-  }}
-  className="bg-blue-600 text-white px-4 py-2 mt-4 rounded"
->
-  Apply Now
-</button>
+            <div className="flex gap-3 mt-4">
+  <button
+    onClick={() => setSelectedJob(job)}
+    className="bg-gray-700 text-white px-4 py-2 rounded"
+  >
+    View Job
+  </button>
+
+  <button
+    onClick={() => setIsModalOpen(true)}
+    className="bg-blue-600 text-white px-4 py-2 rounded"
+  >
+    Apply Now
+  </button>
+</div>
             </div>
 
           ))}
 
         </div>
       )}
+
+      {selectedJob && (
+  <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-40">
+    <div className="bg-white p-6 rounded-lg w-[500px] max-w-[90%]">
+      <h2 className="text-2xl font-bold mb-4">
+        {selectedJob.title}
+      </h2>
+
+      <p><strong>Company:</strong> {selectedJob.company}</p>
+      <p><strong>Location:</strong> {selectedJob.location}</p>
+      <p><strong>Salary:</strong> {selectedJob.salary}</p>
+      <p><strong>Experience:</strong> {selectedJob.experience}</p>
+      <p>
+        <strong>Skills:</strong>{" "}
+        {selectedJob.skills.join(", ")}
+      </p>
+
+      <p className="mt-3">
+        <strong>Description:</strong><br />
+        {selectedJob.description}
+      </p>
+
+      <button
+        onClick={() => setSelectedJob(null)}
+        className="mt-5 bg-red-600 text-white px-4 py-2 rounded"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
 
       <ApplyModal
         isOpen={isModalOpen}

@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from "react-router-dom";
 import { companies } from '../data/companies';
 
 const FeaturedCompanies = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,9 +32,12 @@ const FeaturedCompanies = () => {
 
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500">{company.jobs} open jobs</span>
-                <button className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition duration-300">
-                  View Jobs
-                </button>
+<button
+  onClick={() => navigate("/jobs")}
+  className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition duration-300"
+>
+  View Jobs
+</button>
               </div>
             </div>
           ))}

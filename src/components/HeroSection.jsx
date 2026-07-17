@@ -10,6 +10,11 @@ const HeroSection = ({ setSearch }) => {
   const navigate = useNavigate();
 
   const handleSearch = () => {
+    if (keyword.trim() === "" || location.trim() === "") {
+      alert("Please enter both Skill/Designation and Location.");
+      return;
+    }
+
     setSearch({
       keyword,
       location,

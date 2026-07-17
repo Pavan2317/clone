@@ -1,8 +1,10 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { jobs } from "../data/jobs";
 
 const FeaturedJobs = ({ search }) => {
+
+  const navigate = useNavigate();
 
   const keyword = search?.keyword?.toLowerCase() || "";
   const location = search?.location?.toLowerCase() || "";
@@ -69,9 +71,21 @@ const FeaturedJobs = ({ search }) => {
               </div>
 
 
-              <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
-                Apply Now
-              </button>
+              <div className="flex gap-3 mt-4">
+  <button
+    onClick={() => navigate("/jobs")}
+    className="bg-gray-600 text-white px-4 py-2 rounded"
+  >
+    View Job
+  </button>
+
+  <button
+    onClick={() => navigate("/jobs")}
+    className="bg-blue-600 text-white px-4 py-2 rounded"
+  >
+    Apply Now
+  </button>
+</div>
 
             </div>
 
