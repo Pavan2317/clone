@@ -14,6 +14,8 @@ const Testimonials = () => {
     speed: 500,
     slidesToShow: 3,
     slidesToScroll: 1,
+    adaptiveHeight: false,
+    variableWidth: false,
     responsive: [
       {
         breakpoint: 1024,
@@ -40,7 +42,7 @@ const Testimonials = () => {
         <Slider {...settings}>
           {testimonials.map((testimonial) => (
             <div key={testimonial.id} className="px-3">
-              <div className="bg-white rounded-xl shadow-md p-6 h-full">
+              <div className="bg-white rounded-xl shadow-md p-6 h-[260px] flex flex-col">
                 <div className="flex items-center mb-4">
                   <img
                     src={testimonial.photo}
