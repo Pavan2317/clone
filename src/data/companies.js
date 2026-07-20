@@ -1,3 +1,9 @@
+import infosysLogo from "../assets/logos/infosys.png";
+import tcsLogo from "../assets/logos/tcs.png";
+import wiproLogo from "../assets/logos/wipro.png";
+import accentureLogo from "../assets/logos/accenture.png";
+import adobeLogo from "../assets/logos/adobe.png";
+
 // Dummy company data
 export const companies = [
   {
@@ -30,7 +36,7 @@ export const companies = [
   {
     id: 4,
     name: 'Infosys',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/e/eb/Infosys_logo.svg',
+    logo: infosysLogo,
     rating: 4.3,
     industry: 'IT Services',
     jobs: 75,
@@ -39,7 +45,7 @@ export const companies = [
   {
     id: 5,
     name: 'TCS',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Tata_Consultancy_Services_Logo.svg',
+    logo: tcsLogo,
     rating: 4.4,
     industry: 'IT Services',
     jobs: 89,
@@ -48,7 +54,7 @@ export const companies = [
   {
     id: 6,
     name: 'Wipro',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/f/fb/Wipro_logo.svg',
+    logo: wiproLogo,
     rating: 4.2,
     industry: 'IT Services',
     jobs: 63,
@@ -57,7 +63,7 @@ export const companies = [
   {
     id: 7,
     name: 'Accenture',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/8/88/Accenture_logo.svg',
+    logo: accentureLogo,
     rating: 4.6,
     industry: 'Consulting',
     jobs: 112,
@@ -66,7 +72,7 @@ export const companies = [
   {
     id: 8,
     name: 'Adobe',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/a/af/Adobe_logo.svg',
+    logo: adobeLogo,
     rating: 4.7,
     industry: 'Software',
     jobs: 45,

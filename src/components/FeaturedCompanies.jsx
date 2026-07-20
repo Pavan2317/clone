@@ -17,7 +17,7 @@ const FeaturedCompanies = () => {
                 <img
                   src={company.logo}
                   alt={`${company.name} logo`}
-                  className="w-12 h-12 object-contain mr-4"
+                className="w-20 h-20 object-contain mr-4"
                 />
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">{company.name}</h3>
