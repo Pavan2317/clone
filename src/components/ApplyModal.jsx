@@ -17,7 +17,8 @@ const ApplyModal = ({ isOpen, onClose, onSubmit }) => {
 
     // Phone: only numbers
     if (name === "phone") {
-      if (!/^\d*$/.test(value)) return;
+      // Allow only digits and maximum 10 digits
+      if (!/^\d*$/.test(value) || value.length > 10) return;
     }
 
     setFormData({
@@ -46,11 +47,12 @@ const ApplyModal = ({ isOpen, onClose, onSubmit }) => {
       newErrors.email = "Enter a valid email";
     }
 
-    // Phone
+    // Phone (Indian mobile number)
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
-    } else if (!/^\d{10}$/.test(formData.phone)) {
-      newErrors.phone = "Phone number must be 10 digits";
+    } else if (!/^[6-9]\d{9}$/.test(formData.phone)) {
+      newErrors.phone =
+        "Enter a valid Indian mobile number (starts with 6, 7, 8, or 9)";
     }
 
     // Resume URL
