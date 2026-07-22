@@ -47,9 +47,9 @@ const JobsPage = ({ search }) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-5 py-10">
+<div className="max-w-7xl mx-auto px-5 py-10 bg-white dark:bg-gray-950 min-h-screen transition-colors duration-300">
 
-      <h1 className="text-3xl font-bold mb-8">
+<h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">
         Available Jobs
       </h1>
 
@@ -64,26 +64,26 @@ const JobsPage = ({ search }) => {
 
             <div
               key={job.id}
-              className="border p-5 rounded-lg shadow"
+className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-5 rounded-lg shadow transition-colors duration-300"
             >
 
-              <h2 className="text-xl font-bold">
+<h2 className="text-xl font-bold text-gray-900 dark:text-white">
                 {job.title}
               </h2>
 
-              <p>
+              <p className="text-gray-700 dark:text-gray-300">
                 <strong>Company:</strong> {job.company}
               </p>
 
-              <p>
+              <p className="text-gray-700 dark:text-gray-300">
                 <strong>Location:</strong> {job.location}
               </p>
 
-              <p>
+              <p className="text-gray-700 dark:text-gray-300">
                 <strong>Salary:</strong> {job.salary}
               </p>
 
-              <p>
+              <p className="text-gray-700 dark:text-gray-300">
                 <strong>Experience:</strong> {job.experience}
               </p>
 
@@ -111,8 +111,8 @@ const JobsPage = ({ search }) => {
 
       {selectedJob && (
   <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-40">
-    <div className="bg-white p-6 rounded-lg w-[500px] max-w-[90%]">
-      <h2 className="text-2xl font-bold mb-4">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-[500px] max-w-[90%]">
+      <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
         {selectedJob.title}
       </h2>
 

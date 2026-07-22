@@ -90,8 +90,8 @@ const ApplyModal = ({ isOpen, onClose, onSubmit }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-2xl p-6 w-[400px] max-w-[90%]">
-        <h2 className="text-2xl font-bold mb-4">
+<div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 w-[400px] max-w-[90%]">
+<h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
           Apply for Job
         </h2>
 
@@ -101,7 +101,7 @@ const ApplyModal = ({ isOpen, onClose, onSubmit }) => {
           placeholder="Full Name"
           value={formData.fullName}
           onChange={handleChange}
-          className="w-full border p-2 rounded"
+className="w-full border dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
         />
         {errors.fullName && (
           <p className="text-red-500 text-sm mb-3">
@@ -115,7 +115,7 @@ const ApplyModal = ({ isOpen, onClose, onSubmit }) => {
           placeholder="Email"
           value={formData.email}
           onChange={handleChange}
-          className="w-full border p-2 rounded"
+          className="w-full border dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
         />
         {errors.email && (
           <p className="text-red-500 text-sm mb-3">
@@ -130,7 +130,7 @@ const ApplyModal = ({ isOpen, onClose, onSubmit }) => {
           maxLength={10}
           value={formData.phone}
           onChange={handleChange}
-          className="w-full border p-2 rounded"
+          className="w-full border dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
         />
         {errors.phone && (
           <p className="text-red-500 text-sm mb-3">
@@ -144,7 +144,7 @@ const ApplyModal = ({ isOpen, onClose, onSubmit }) => {
           placeholder="Resume Link"
           value={formData.resume}
           onChange={handleChange}
-          className="w-full border p-2 rounded"
+          className="w-full border dark:border-gray-600 bg-white dark:bg-gray-700 text-black dark:text-white p-2 rounded"
         />
         {errors.resume && (
           <p className="text-red-500 text-sm mb-4">

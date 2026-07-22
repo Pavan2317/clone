@@ -27,11 +27,11 @@ const FeaturedJobs = ({ search }) => {
 
 
   return (
-    <section className="py-16 bg-gray-50">
+<section className="py-16 bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
 
       <div className="max-w-7xl mx-auto px-4">
 
-        <h2 className="text-3xl font-bold text-center mb-12">
+<h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">
           Featured Jobs
         </h2>
 
@@ -42,20 +42,22 @@ const FeaturedJobs = ({ search }) => {
 
             <div
               key={job.id}
-              className="bg-white rounded-xl shadow-md p-6"
+className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-colors duration-300"
             >
 
-              <h3 className="text-xl font-bold">
+<h3 className="text-xl font-bold text-gray-900 dark:text-white">
                 {job.title}
               </h3>
 
-              <p>{job.company}</p>
+              <p className="text-gray-700 dark:text-gray-300">
+                {job.company}
+              </p>
 
-              <p>
+              <p className="text-gray-700 dark:text-gray-300">
                 Location: {job.location}
               </p>
 
-              <p>
+              <p className="text-gray-700 dark:text-gray-300">
                 Salary: {job.salary}
               </p>
 
@@ -63,7 +65,7 @@ const FeaturedJobs = ({ search }) => {
                 {job.skills.map((skill,index)=>(
                   <span
                     key={index}
-                    className="bg-gray-200 px-2 py-1 rounded"
+className="bg-gray-200 dark:bg-gray-700 dark:text-white px-2 py-1 rounded"
                   >
                     {skill}
                   </span>

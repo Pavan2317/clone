@@ -33,16 +33,16 @@ const Testimonials = () => {
   };
 
   return (
-    <section className="py-16 bg-gray-50">
+<section className="py-16 bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
+<h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
           What Our Users Say
         </h2>
 
         <Slider {...settings}>
           {testimonials.map((testimonial) => (
             <div key={testimonial.id} className="px-3">
-              <div className="bg-white rounded-xl shadow-md p-6 h-[260px] flex flex-col">
+<div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 h-[260px] flex flex-col">
                 <div className="flex items-center mb-4">
                   <img
                     src={testimonial.photo}
@@ -50,16 +50,16 @@ const Testimonials = () => {
                     className="w-12 h-12 rounded-full object-cover mr-4"
                   />
                   <div>
-                    <h4 className="font-semibold text-gray-900">
+<h4 className="font-semibold text-gray-900 dark:text-white">
                       {testimonial.name}
                     </h4>
-                    <p className="text-sm text-gray-600">
+<p className="text-sm text-gray-600 dark:text-gray-300">
                       {testimonial.role}
                     </p>
                   </div>
                 </div>
 
-                <p className="text-gray-700 italic">
+<p className="text-gray-300 italic">
                   "{testimonial.review}"
                 </p>
               </div>
