@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Routes, Route } from "react-router-dom";
 
 import JobsPage from "./pages/JobsPage";
+import ProductsPage from "./pages/ProductsPage";
 
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
@@ -19,7 +20,6 @@ function Home({setSearch}) {
 
   return (
     <>
-      <Navbar />
 
       <main>
 
@@ -60,7 +60,10 @@ function App() {
 
   return (
 
-    <Routes>
+    <>
+      <Navbar />
+
+      <Routes>
 
       <Route
         path="/"
@@ -78,7 +81,11 @@ function App() {
       />
 
 
+      <Route path="/products" element={<ProductsPage />} />
+
     </Routes>
+
+    </>
 
   );
 }
