@@ -99,16 +99,16 @@ const AddJob = () => {
                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Job Title <span className="text-red-500">*</span>
                 </label>
-                <input
-                  id="title"
-                  name="title"
-                  type="text"
-                  required
-                  className={`w-full px-3 py-2 border ${errors.title ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
-                  placeholder="e.g., Senior Software Engineer"
-                  value={formData.title}
-                  onChange={handleChange}
-                />
+                 <input
+                   id="title"
+                   name="title"
+                   type="text"
+                   required
+                   className={`w-full px-3 py-2 border ${errors.title ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600`}
+                   placeholder="e.g., Senior Software Engineer"
+                   value={formData.title}
+                   onChange={handleChange}
+                 />
                 {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
               </div>
 
@@ -116,16 +116,16 @@ const AddJob = () => {
                 <label htmlFor="company" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Company <span className="text-red-500">*</span>
                 </label>
-                <input
-                  id="company"
-                  name="company"
-                  type="text"
-                  required
-                  className={`w-full px-3 py-2 border ${errors.company ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
-                  placeholder="e.g., Tech Corp Inc."
-                  value={formData.company}
-                  onChange={handleChange}
-                />
+                 <input
+                   id="company"
+                   name="company"
+                   type="text"
+                   required
+                   className={`w-full px-3 py-2 border ${errors.company ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600`}
+                   placeholder="e.g., Tech Corp Inc."
+                   value={formData.company}
+                   onChange={handleChange}
+                 />
                 {errors.company && <p className="mt-1 text-sm text-red-600">{errors.company}</p>}
               </div>
 
@@ -138,7 +138,7 @@ const AddJob = () => {
                   name="location"
                   type="text"
                   required
-                  className={`w-full px-3 py-2 border ${errors.location ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                  className={`w-full px-3 py-2 border ${errors.location ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600`}
                   placeholder="e.g., San Francisco, CA"
                   value={formData.location}
                   onChange={handleChange}
@@ -154,7 +154,7 @@ const AddJob = () => {
                   id="salary"
                   name="salary"
                   type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="e.g., $100,000 - $150,000 per year"
                   value={formData.salary}
                   onChange={handleChange}
@@ -192,7 +192,7 @@ const AddJob = () => {
                 name="description"
                 rows={4}
                 required
-                className={`w-full px-3 py-2 border ${errors.description ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                className={`w-full px-3 py-2 border ${errors.description ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600`}
                 placeholder="Describe the job responsibilities, requirements, and benefits"
                 value={formData.description}
                 onChange={handleChange}
@@ -208,7 +208,7 @@ const AddJob = () => {
                 id="requirements"
                 name="requirements"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 placeholder="List required skills, education, and experience"
                 value={formData.requirements}
                 onChange={handleChange}
@@ -223,7 +223,7 @@ const AddJob = () => {
                 id="benefits"
                 name="benefits"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 placeholder="List benefits like health insurance, 401k, remote work, etc."
                 value={formData.benefits}
                 onChange={handleChange}
@@ -234,7 +234,7 @@ const AddJob = () => {
               <button
                 type="button"
                 onClick={() => navigate('/jobs-list')}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Cancel
               </button>

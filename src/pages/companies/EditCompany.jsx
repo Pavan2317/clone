@@ -11,6 +11,7 @@ const EditCompany = () => {
 
   const [formData, setFormData] = useState({
     companyName: '',
+  
     website: '',
     location: '',
     logo: '',
@@ -93,44 +94,44 @@ const EditCompany = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Edit Company</h1>
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <p className="text-gray-600">Loading company details...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+   if (loading) {
+     return (
+       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Edit Company</h1>
+           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center transition-colors duration-300">
+             <p className="text-gray-600 dark:text-gray-300">Loading company details...</p>
+           </div>
+         </div>
+       </div>
+     );
+   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Edit Company</h1>
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-            {error}
-            <button
-              onClick={() => navigate('/companies')}
-              className="ml-4 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-            >
-              Back to Companies
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+   if (error) {
+     return (
+       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Edit Company</h1>
+           <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded relative transition-colors duration-300">
+             {error}
+             <button
+               onClick={() => navigate('/companies')}
+               className="ml-4 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+             >
+               Back to Companies
+             </button>
+           </div>
+         </div>
+       </div>
+     );
+   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Edit Company</h1>
+     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Edit Company</h1>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
+         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
           {successMessage && (
             <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
               {successMessage}
@@ -146,41 +147,41 @@ const EditCompany = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-1">
-                  Company Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="companyName"
-                  name="companyName"
-                  type="text"
-                  required
-                  className={`w-full px-3 py-2 border ${errors.companyName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
-                  placeholder="e.g., Infosys Technologies"
-                  value={formData.companyName}
-                  onChange={handleChange}
-                />
+                 <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                   Company Name <span className="text-red-500">*</span>
+                 </label>
+                 <input
+                   id="companyName"
+                   name="companyName"
+                   type="text"
+                   required
+                   className={`w-full px-3 py-2 border ${errors.companyName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600`}
+                   placeholder="e.g., Infosys Technologies"
+                   value={formData.companyName}
+                   onChange={handleChange}
+                 />
                 {errors.companyName && <p className="mt-1 text-sm text-red-600">{errors.companyName}</p>}
               </div>
 
               <div>
-                <label htmlFor="website" className="block text-sm font-medium text-gray-700 mb-1">
-                  Website <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="website"
-                  name="website"
-                  type="url"
-                  required
-                  className={`w-full px-3 py-2 border ${errors.website ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
-                  placeholder="e.g., https://www.infosys.com"
-                  value={formData.website}
-                  onChange={handleChange}
-                />
+                 <label htmlFor="website" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                   Website <span className="text-red-500">*</span>
+                 </label>
+                 <input
+                   id="website"
+                   name="website"
+                   type="url"
+                   required
+                   className={`w-full px-3 py-2 border ${errors.website ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600`}
+                   placeholder="e.g., https://www.infosys.com"
+                   value={formData.website}
+                   onChange={handleChange}
+                 />
                 {errors.website && <p className="mt-1 text-sm text-red-600">{errors.website}</p>}
               </div>
 
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Location <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -188,7 +189,7 @@ const EditCompany = () => {
                   name="location"
                   type="text"
                   required
-                  className={`w-full px-3 py-2 border ${errors.location ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                  className={`w-full px-3 py-2 border ${errors.location ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600`}
                   placeholder="e.g., Hyderabad, India"
                   value={formData.location}
                   onChange={handleChange}
@@ -197,14 +198,14 @@ const EditCompany = () => {
               </div>
 
               <div>
-                <label htmlFor="logo" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="logo" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Logo URL
                 </label>
                 <input
                   id="logo"
                   name="logo"
                   type="url"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="e.g., https://example.com/logo.png"
                   value={formData.logo}
                   onChange={handleChange}
@@ -212,13 +213,13 @@ const EditCompany = () => {
               </div>
 
               <div>
-                <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="industry" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Industry
                 </label>
                 <select
                   id="industry"
                   name="industry"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   value={formData.industry}
                   onChange={handleChange}
                 >
@@ -234,13 +235,13 @@ const EditCompany = () => {
               </div>
 
               <div>
-                <label htmlFor="employeeCount" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="employeeCount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Employee Count
                 </label>
                 <select
                   id="employeeCount"
                   name="employeeCount"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   value={formData.employeeCount}
                   onChange={handleChange}
                 >
@@ -255,7 +256,7 @@ const EditCompany = () => {
               </div>
 
               <div>
-                <label htmlFor="foundedYear" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="foundedYear" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Founded Year
                 </label>
                 <input
@@ -264,7 +265,7 @@ const EditCompany = () => {
                   type="number"
                   min="1900"
                   max={new Date().getFullYear()}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                   placeholder="e.g., 1981"
                   value={formData.foundedYear}
                   onChange={handleChange}
@@ -273,14 +274,14 @@ const EditCompany = () => {
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Company Description
               </label>
               <textarea
                 id="description"
                 name="description"
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white dark:border-gray-600"
                 placeholder="Describe the company, its mission, values, and what makes it unique"
                 value={formData.description}
                 onChange={handleChange}
@@ -291,7 +292,7 @@ const EditCompany = () => {
               <button
                 type="button"
                 onClick={() => navigate('/companies')}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Cancel
               </button>

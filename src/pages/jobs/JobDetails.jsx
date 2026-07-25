@@ -79,62 +79,62 @@ const JobDetails = () => {
   // Check if this job belongs to the current user (for company users)
   const isJobOwner = user && job && user.id === job.companyId;
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Job Details</h1>
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <p className="text-gray-600">Loading job details...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+   if (loading) {
+     return (
+       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Job Details</h1>
+           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center transition-colors duration-300">
+             <p className="text-gray-600 dark:text-gray-300">Loading job details...</p>
+           </div>
+         </div>
+       </div>
+     );
+   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Job Details</h1>
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-            {error}
-            <button
-              onClick={() => navigate('/jobs-list')}
-              className="ml-4 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-            >
-              Back to Jobs
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+   if (error) {
+     return (
+       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Job Details</h1>
+           <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 px-4 py-3 rounded relative transition-colors duration-300">
+             {error}
+             <button
+               onClick={() => navigate('/jobs-list')}
+               className="ml-4 bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+             >
+               Back to Jobs
+             </button>
+           </div>
+         </div>
+       </div>
+     );
+   }
 
-  if (!job) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">Job Details</h1>
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <p className="text-gray-600">Job not found.</p>
-            <button
-              onClick={() => navigate('/jobs-list')}
-              className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
-            >
-              Back to Jobs
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+   if (!job) {
+     return (
+       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Job Details</h1>
+           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center transition-colors duration-300">
+             <p className="text-gray-600 dark:text-gray-300">Job not found.</p>
+             <button
+               onClick={() => navigate('/jobs-list')}
+               className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+             >
+               Back to Jobs
+             </button>
+           </div>
+         </div>
+       </div>
+     );
+   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Job Details</h1>
+     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+         <div className="flex justify-between items-center mb-8">
+           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Job Details</h1>
 
           <div className="flex space-x-3">
             {canManageJobs && isJobOwner && (
@@ -167,11 +167,11 @@ const JobDetails = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">{job.title}</h2>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-colors duration-300">
+           <div className="p-6">
+             <div className="mb-6">
+               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{job.title}</h2>
+               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-300">
                 <span className="flex items-center">
                   <svg className="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -202,41 +202,41 @@ const JobDetails = () => {
               </div>
             </div>
 
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Job Description</h3>
-              <p className="text-gray-600 whitespace-pre-line">{job.description}</p>
-            </div>
+             <div className="mb-6">
+               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Job Description</h3>
+               <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line">{job.description}</p>
+             </div>
 
-            {job.requirements && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Requirements</h3>
-                <ul className="list-disc list-inside text-gray-600 whitespace-pre-line">
-                  {job.requirements.split('\n').map((req, index) => (
-                    <li key={index}>{req}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+             {job.requirements && (
+               <div className="mb-6">
+                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Requirements</h3>
+                 <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 whitespace-pre-line">
+                   {job.requirements.split('\n').map((req, index) => (
+                     <li key={index}>{req}</li>
+                   ))}
+                 </ul>
+               </div>
+             )}
 
-            {job.benefits && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Benefits</h3>
-                <ul className="list-disc list-inside text-gray-600 whitespace-pre-line">
-                  {job.benefits.split('\n').map((benefit, index) => (
-                    <li key={index}>{benefit}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+             {job.benefits && (
+               <div className="mb-6">
+                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Benefits</h3>
+                 <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 whitespace-pre-line">
+                   {job.benefits.split('\n').map((benefit, index) => (
+                     <li key={index}>{benefit}</li>
+                   ))}
+                 </ul>
+               </div>
+             )}
 
-            <div className="border-t border-gray-200 pt-6">
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-500">
-                  Posted on: {new Date(job.createdAt).toLocaleDateString()}
-                  {job.updatedAt && job.updatedAt !== job.createdAt && (
-                    <span className="ml-4">Updated on: {new Date(job.updatedAt).toLocaleDateString()}</span>
-                  )}
-                </div>
+             <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+               <div className="flex justify-between items-center">
+                 <div className="text-sm text-gray-500 dark:text-gray-300">
+                   Posted on: {new Date(job.createdAt).toLocaleDateString()}
+                   {job.updatedAt && job.updatedAt !== job.createdAt && (
+                     <span className="ml-4">Updated on: {new Date(job.updatedAt).toLocaleDateString()}</span>
+                   )}
+                 </div>
 
                 {!canManageJobs && user && user.role === 'candidate' && (
                   <div className="flex space-x-3">
