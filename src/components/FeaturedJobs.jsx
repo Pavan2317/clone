@@ -1,21 +1,33 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { jobs } from "../data/jobs";
+import { getJobs } from "../services/jobService";
 
 const FeaturedJobs = ({ search }) => {
 
   const navigate = useNavigate();
+  const [jobs, setJobs] = useState([]);
 
   const keyword = search?.keyword?.toLowerCase() || "";
   const location = search?.location?.toLowerCase() || "";
 
+  useEffect(() => {
+    const loadJobs = async () => {
+      const data = await getJobs();
+      setJobs(data);
+    };
+    loadJobs();
+  }, []);
 
   const filteredJobs = jobs.filter((job) => {
 
     const jobData =
-      `${job.title} ${job.company} ${job.skills.join(" ")}`.toLowerCase();
+      `${job.title}
+${job.company}
+${job.description || ""}
+${job.requirements || ""}`
+    .toLowerCase();
 
-    const locationData = job.location.toLowerCase();
+    const locationData = (job.location || "").toLowerCase();
 
 
     return (
@@ -62,12 +74,13 @@ className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-colors 
               </p>
 
               <div className="mt-3 flex gap-2 flex-wrap">
-                {job.skills.map((skill,index)=>(
+                {job.requirements &&
+                job.requirements.split(",").map((skill,index)=>(
                   <span
                     key={index}
 className="bg-gray-200 dark:bg-gray-700 dark:text-white px-2 py-1 rounded"
                   >
-                    {skill}
+                    {skill.trim()}
                   </span>
                 ))}
               </div>

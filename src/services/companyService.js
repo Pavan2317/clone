@@ -1,5 +1,7 @@
+import { companies as defaultCompanies } from "../data/companies";
+
 // Load companies from localStorage on initialization
-let companies = JSON.parse(localStorage.getItem('companies') || '[]');
+let companies = JSON.parse(localStorage.getItem('companies')) || defaultCompanies;
 
 // Save companies to localStorage
 const saveCompaniesToStorage = () => {

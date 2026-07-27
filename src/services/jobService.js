@@ -1,5 +1,7 @@
+import { jobs as defaultJobs } from "../data/jobs";
+
 // Load jobs from localStorage on initialization
-let jobs = JSON.parse(localStorage.getItem('jobs') || '[]');
+let jobs = JSON.parse(localStorage.getItem('jobs')) || defaultJobs;
 
 // Save jobs to localStorage
 const saveJobsToStorage = () => {

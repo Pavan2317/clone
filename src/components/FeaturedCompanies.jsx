@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { companies } from '../data/companies';
+import { getCompanies } from '../services/companyService';
 
 const FeaturedCompanies = () => {
   const navigate = useNavigate();
+  const [companies, setCompanies] = useState([]);
+
+  useEffect(() => {
+    const loadCompanies = async () => {
+      const data = await getCompanies();
+      setCompanies(data);
+    };
+    loadCompanies();
+  }, []);
 
   return (
 <section className="py-16 bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
@@ -16,14 +25,14 @@ const FeaturedCompanies = () => {
               <div className="flex items-center mb-4">
                 <img
                   src={company.logo}
-                  alt={`${company.name} logo`}
+                  alt={`${company.companyName || company.name} logo`}
                 className="w-20 h-20 object-contain mr-4"
                 />
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{company.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{company.companyName || company.name}</h3>
                   <div className="flex items-center">
                     <span className="text-yellow-400">★</span>
-                    <span className="ml-1 text-sm text-gray-600 dark:text-gray-300">{company.rating}</span>
+                    <span className="ml-1 text-sm text-gray-600 dark:text-gray-300">{company.rating || "N/A"}</span>
                   </div>
                 </div>
               </div>
@@ -31,7 +40,7 @@ const FeaturedCompanies = () => {
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{company.industry}</p>
 
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500 dark:text-gray-300">{company.jobs} open jobs</span>
+                <span className="text-sm text-gray-500 dark:text-gray-300">{(company.jobs || 0)} open jobs</span>
 <button
   onClick={() => navigate("/jobs")}
   className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition duration-300"

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getApplications, getApplicationsByCandidateId, getApplicationsByCompanyId, deleteApplication } from '../../services/applicationService';
 
 const Applications = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -54,10 +56,21 @@ const Applications = () => {
   };
 
   const filteredApplications = applications.filter(application =>
-    application.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    application.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    application.candidateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    application.status.toLowerCase().includes(searchTerm.toLowerCase())
+    (application.jobTitle || "")
+    .toLowerCase()
+    .includes(searchTerm.toLowerCase()) ||
+
+    (application.company || "")
+    .toLowerCase()
+    .includes(searchTerm.toLowerCase()) ||
+
+    (application.candidateName || "")
+    .toLowerCase()
+    .includes(searchTerm.toLowerCase()) ||
+
+    (application.status || "")
+    .toLowerCase()
+    .includes(searchTerm.toLowerCase())
   );
 
   // Check if user can delete applications (admin only)
@@ -169,7 +182,7 @@ const Applications = () => {
                        )}
                        {user.role === 'candidate' && (
                          <td className="px-6 py-4 whitespace-nowrap">
-                           <div className="text-sm text-gray-500 dark:text-gray-300">{new Date(application.appliedDate).toLocaleDateString()}</div>
+                           <div className="text-sm text-gray-500 dark:text-gray-300">{application.appliedDate ? new Date(application.appliedDate).toLocaleDateString() : "-"}</div>
                          </td>
                        )}
                       <td className="px-6 py-4 whitespace-nowrap">
