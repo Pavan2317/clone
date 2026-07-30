@@ -1,11 +1,20 @@
-import React, { useState } from "react";
-import { jobs } from "../data/jobs";
+import React, { useState, useEffect } from "react";
+import { getJobs } from "../services/jobService";
 import ApplyModal from "../components/ApplyModal";
 
 const JobsPage = ({ search }) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
+  const [jobs, setJobs] = useState([]);
+
+  useEffect(() => {
+    const loadJobs = async () => {
+      const data = await getJobs();
+      setJobs(data);
+    };
+    loadJobs();
+  }, []);
 
   const filteredJobs = jobs.filter((job) => {
 

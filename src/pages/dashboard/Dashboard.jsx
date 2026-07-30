@@ -1,9 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { getJobs } from '../../services/jobService';
+import { getCompanies } from '../../services/companyService';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const [jobCount, setJobCount] = useState(0);
+  const [companyCount, setCompanyCount] = useState(0);
+  const [userCount, setUserCount] = useState(0);
+
+  useEffect(() => {
+    const loadData = async () => {
+      const jobs = await getJobs();
+      const companies = await getCompanies();
+      const users = JSON.parse(localStorage.getItem("users")) || [];
+
+      setJobCount(jobs.length);
+      setCompanyCount(companies.length);
+      setUserCount(users.length);
+    };
+
+    loadData();
+  }, []);
 
   const renderCandidateDashboard = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -70,13 +89,18 @@ const Dashboard = () => {
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Total Users</h2>
-        <p className="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white">{userCount}</p>
         <p className="text-gray-600 dark:text-gray-300 mt-2">Manage all users in the system.</p>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Total Jobs</h2>
-        <p className="text-3xl font-bold text-gray-900 dark:text-white">0</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white">{jobCount}</p>
         <p className="text-gray-600 dark:text-gray-300 mt-2">All job postings in the system.</p>
+      </div>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Total Companies</h2>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white">{companyCount}</p>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">Registered companies in the system.</p>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md md:col-span-2 transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Quick Actions</h2>

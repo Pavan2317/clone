@@ -71,7 +71,7 @@ function App() {
   });
 
   return (
-      <>
+      <div className="min-h-screen bg-white dark:bg-gray-950 transition-colors duration-300">
         <Navbar />
 
         <Routes>
@@ -183,7 +183,7 @@ function App() {
             }
           />
         </Routes>
-      </>
+      </div>
   );
 }
 

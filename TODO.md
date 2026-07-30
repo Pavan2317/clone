@@ -1,11 +1,9 @@
 # Task Progress
 
-- [x] Issue 1: Create vercel.json for SPA routing
-- [x] Issue 4: Fix jobService.js - default jobs disappear
-- [x] Issue 5: Fix companyService.js - default companies disappear
-- [x] Issue 2: Fix FeaturedJobs.jsx - new jobs not showing
-- [x] Issue 3: Fix FeaturedCompanies.jsx - new companies not showing
-- [x] Issue 6: Fix Applications.jsx - white screen
-- [x] Run `npm run build` - **Build successful! No errors.**
-
+- [x] Plan created and approved
+- [ ] 1. App.jsx — Add dark mode background wrapper div
+- [ ] 2. index.css — Fix white strips in dark mode
+- [ ] 3. AddJob.jsx — Replace company input with dropdown
+- [ ] 4. Dashboard.jsx — Dynamic counts + Total Companies card
+- [ ] 5. JobsPage.jsx — Dynamic job loading from service
 
