@@ -1,138 +1,67 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { getJobs } from "../services/jobService";
-import { createApplication } from "../services/applicationService";
-import ApplyModal from "../components/ApplyModal";
 
-const JobsPage = ({ search }) => {
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState(null);
+const JobsPage = () => {
   const [jobs, setJobs] = useState([]);
-
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadJobs = async () => {
+    const fetchJobs = async () => {
       try {
         const data = await getJobs();
-        setJobs(data);
-      } catch (error) {
-        console.error(error);
+        if (Array.isArray(data)) {
+          setJobs(data);
+        } else if (data && Array.isArray(data.jobs)) {
+          setJobs(data.jobs);
+        } else {
+          setJobs([]);
+        }
+      } catch (err) {
+        console.error("Error loading jobs page:", err);
+        setJobs([]);
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadJobs();
+    fetchJobs();
   }, []);
 
+  const safeJobs = Array.isArray(jobs) ? jobs : [];
 
-  const handleSubmit = async (formData) => {
-
-    try {
-
-      const applicationData = {
-        jobId: String(selectedJob._id || selectedJob.id),
-
-        candidateId:
-          localStorage.getItem("userId") || "1785783550243",
-
-        companyId:
-          selectedJob.companyId || "",
-
-        jobTitle:
-          selectedJob.title,
-
-        company:
-          selectedJob.company,
-
-        candidateName:
-          formData.fullName,
-
-        candidateEmail:
-          formData.email,
-
-        phone:
-          formData.phone,
-
-        resume:
-          formData.resume,
-
-        status:
-          "pending"
-      };
-
-
-      await createApplication(applicationData);
-
-      alert("Application Submitted Successfully");
-
-      setIsModalOpen(false);
-      setSelectedJob(null);
-
-
-    } catch(error) {
-
-      console.error(error);
-      alert("Failed to submit application");
-
-    }
-
-  };
-
+  if (loading) {
+    return <div className="p-10 text-center dark:text-white">Loading...</div>;
+  }
 
   return (
-
-    <div className="max-w-7xl mx-auto px-5 py-10">
-
-      <h1 className="text-3xl font-bold mb-8">
-        Available Jobs
-      </h1>
-
-
-      {jobs.map((job)=>(
-
-        <div 
-          key={job._id || job.id}
-          className="border p-5 mb-5 rounded"
-        >
-
-          <h2 className="text-xl font-bold">
-            {job.title}
-          </h2>
-
-          <p>
-            Company: {job.company}
-          </p>
-
-          <button
-            onClick={()=>{
-              setSelectedJob(job);
-              setIsModalOpen(true);
-            }}
-            className="bg-blue-600 text-white px-4 py-2 rounded mt-3"
-          >
-            Apply Now
-          </button>
-
-
-        </div>
-
-      ))}
-
-
-      <ApplyModal
-        isOpen={isModalOpen}
-        onClose={()=>{
-          setIsModalOpen(false);
-          setSelectedJob(null);
-        }}
-        onSubmit={handleSubmit}
-      />
-
-
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Jobs</h1>
+        {safeJobs.length === 0 ? (
+          <p className="text-gray-600 dark:text-gray-400">No jobs available.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {safeJobs.map((job, index) => {
+              const jobId = job.id || job._id || `job-${index}`;
+              return (
+                <div key={jobId} className="bg-white dark:bg-gray-800 p-6 rounded shadow">
+                  <h2 className="text-xl font-bold dark:text-white">{job.title || "Untitled"}</h2>
+                  <p className="text-gray-600 dark:text-gray-300">{job.company || "N/A"}</p>
+                  <Link
+                    to={`/jobs/${jobId}`}
+                    className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded text-sm"
+                  >
+                    View Details
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
-
   );
-
 };
-
 
 export default JobsPage;
