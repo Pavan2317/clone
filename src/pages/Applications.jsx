@@ -1,103 +1,63 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { 
-  getApplicationsByCandidateId,
-  getApplicationsByCompanyId
-} from "../services/applicationService";
+const APPLICATIONS_KEY = "applications";
 
-const Applications = () => {
-
-const { user } = useAuth();
-
-  console.log("LOGIN USER:", user);
-
-  const [applications, setApplications] = useState([]);
-
-useEffect(() => {
-
-  const fetchApplications = async () => {
-
-    try {
-
-      let data = [];
-
-      if (user.role === "candidate") {
-
-        data = await getApplicationsByCandidateId(user.id);
-
-      } 
-      else if (user.role === "company") {
-
-data = await getApplicationsByCompanyId(user.name);
-
-      }
-
-      console.log("Applications:", data);
-
-      setApplications(data);
-
-    } catch(error) {
-
-      console.log(error);
-
-    }
-
-  };
-
-
-  if(user){
-    fetchApplications();
+const getStorage = (key) => {
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Error reading applications from localStorage:", error);
+    return [];
   }
-
-
-}, [user]);
-
-
-  return (
-    <div className="min-h-screen p-6 bg-white dark:bg-gray-950">
-
-      <h1 className="text-3xl font-bold mb-6">
-        My Applications
-      </h1>
-
-
-      {applications.length === 0 ? (
-
-        <p>No applications found</p>
-
-      ) : (
-
-        applications.map((application)=>(
-
-          <div 
-          key={application._id}
-          className="p-5 mb-4 bg-gray-100 rounded">
-
-            <h2 className="text-xl font-bold">
-              {application.jobTitle}
-            </h2>
-
-            <p>
-              Company: {application.company}
-            </p>
-
-            <p>
-              Candidate: {application.candidateName}
-            </p>
-
-            <p>
-              Status: {application.status}
-            </p>
-
-          </div>
-
-        ))
-
-      )}
-
-    </div>
-  );  
 };
 
+const setStorage = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error("Error saving applications to localStorage:", error);
+  }
+};
 
-export default Applications;
+export const getApplications = async () => {
+  const apps = getStorage(APPLICATIONS_KEY);
+  return Array.isArray(apps) ? apps : [];
+};
+
+export const getApplicationsByCandidate = async (candidateId) => {
+  const apps = await getApplications();
+  const safeApps = Array.isArray(apps) ? apps : [];
+  return safeApps.filter(
+    (app) => app.candidateId === candidateId || app.userId === candidateId
+  );
+};
+
+export const addApplication = async (applicationData) => {
+  const apps = await getApplications();
+  const safeApps = Array.isArray(apps) ? apps : [];
+  
+  const newApp = {
+    id: Date.now().toString(),
+    ...applicationData,
+    appliedAt: new Date().toISOString(),
+    status: applicationData.status || "Pending",
+  };
+
+  safeApps.push(newApp);
+  setStorage(APPLICATIONS_KEY, safeApps);
+  return newApp;
+};
+
+export const updateApplicationStatus = async (id, status) => {
+  const apps = await getApplications();
+  const safeApps = Array.isArray(apps) ? apps : [];
+  
+  const updatedApps = safeApps.map((app) => {
+    if (app.id === id || app._id === id) {
+      return { ...app, status };
+    }
+    return app;
+  });
+
+  setStorage(APPLICATIONS_KEY, updatedApps);
+  return updatedApps;
+};

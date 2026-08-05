@@ -12,13 +12,41 @@ const Dashboard = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      const jobs = await getJobs();
-      const companies = await getCompanies();
-      const users = JSON.parse(localStorage.getItem("users")) || [];
+      try {
+        const jobs = await getJobs();
+        const companies = await getCompanies();
 
-      setJobCount(jobs.length);
-      setCompanyCount(companies.length);
-      setUserCount(users.length);
+        // Safely parse users from localStorage
+        let users = [];
+        try {
+          const rawUsers = localStorage.getItem("users");
+          users = rawUsers ? JSON.parse(rawUsers) : [];
+        } catch (e) {
+          console.error("Error reading users from localStorage:", e);
+          users = [];
+        }
+
+        // Ensure arrays before reading length
+        const safeJobs = Array.isArray(jobs)
+          ? jobs
+          : jobs && Array.isArray(jobs.jobs)
+          ? jobs.jobs
+          : [];
+
+        const safeCompanies = Array.isArray(companies)
+          ? companies
+          : companies && Array.isArray(companies.companies)
+          ? companies.companies
+          : [];
+
+        const safeUsers = Array.isArray(users) ? users : [];
+
+        setJobCount(safeJobs.length);
+        setCompanyCount(safeCompanies.length);
+        setUserCount(safeUsers.length);
+      } catch (err) {
+        console.error("Error loading dashboard data:", err);
+      }
     };
 
     loadData();
@@ -27,7 +55,9 @@ const Dashboard = () => {
   const renderCandidateDashboard = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Welcome back, {user?.name}!</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+          Welcome back, {user?.name || "Candidate"}!
+        </h2>
         <p className="text-gray-600 dark:text-gray-300">Here's your candidate dashboard overview.</p>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
@@ -50,7 +80,9 @@ const Dashboard = () => {
   const renderCompanyDashboard = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Welcome back, {user?.name}!</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+          Welcome back, {user?.name || "Employer"}!
+        </h2>
         <p className="text-gray-600 dark:text-gray-300">Here's your company dashboard overview.</p>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
@@ -85,7 +117,7 @@ const Dashboard = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Admin Dashboard</h2>
-        <p className="text-gray-600 dark:text-gray-300">Welcome, {user?.name}! Here's the system overview.</p>
+        <p className="text-gray-600 dark:text-gray-300">Welcome, {user?.name || "Admin"}! Here's the system overview.</p>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Total Users</h2>
@@ -125,7 +157,7 @@ const Dashboard = () => {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Dashboard</h1>
 
         {user?.role === 'candidate' && renderCandidateDashboard()}
-        {user?.role === 'company' && renderCompanyDashboard()}
+        {(user?.role === 'company' || user?.role === 'employer') && renderCompanyDashboard()}
         {user?.role === 'admin' && renderAdminDashboard()}
 
         {!user && (
