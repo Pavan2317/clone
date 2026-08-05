@@ -23,11 +23,11 @@ export const createApplication = async (req, res) => {
     const application = new Application({
       jobId: req.body.jobId,
       candidateId: req.body.candidateId,
-      companyId: req.body.companyId || req.body.company || "",
+      companyId: req.body.companyId || req.body.company || "N/A",
       jobTitle: req.body.jobTitle,
       company: req.body.company,
       candidateName: req.body.candidateName,
-      status: "pending",
+      status: req.body.status || "pending",
     });
 
     await application.save();
@@ -86,10 +86,7 @@ export const getApplicationsByCompanyId = async (req, res) => {
 
     // Checks companyId as well as company string for maximum compatibility
     const applications = await Application.find({
-      $or: [
-        { companyId: companyId },
-        { company: companyId }
-      ],
+      $or: [{ companyId: companyId }, { company: companyId }],
     })
       .populate("jobId")
       .populate("candidateId", "name email");

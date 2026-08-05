@@ -120,7 +120,7 @@ const Applications = () => {
             </thead>
             <tbody>
               {filteredApplications.map((application, index) => {
-                const appId = application.id || application._id || `app-${index}`;
+                const appId = application.job?._id || application.job || application._id || `app-${index}`;
                 return (
                   <tr
                     key={appId}
@@ -145,7 +145,7 @@ const Applications = () => {
                             `/jobs/${
                               application.jobId?._id ||
                               application.jobId ||
-                              application.id
+                              application.job?._id || application.job
                             }`
                           )
                         }

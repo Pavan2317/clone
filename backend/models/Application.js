@@ -4,40 +4,41 @@ const applicationSchema = new mongoose.Schema(
   {
     jobId: {
       type: String,
-      required: true
+      required: true,
     },
 
     candidateId: {
       type: String,
-      required: true
+      required: true,
     },
 
     companyId: {
-      type: String
+      type: String,
+      required: true,
     },
 
     jobTitle: {
       type: String,
-      required: true
+      required: true,
     },
 
     company: {
       type: String,
-      required: true
+      required: true,
     },
 
     candidateName: {
       type: String,
-      required: true
+      required: true,
     },
 
     status: {
       type: String,
-      default: "pending"
-    }
+      default: "pending",
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

@@ -14,7 +14,7 @@ const setStorage = (key, data) => {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (error) {
-    console.error("Error writing jobs to localStorage:", error);
+    console.error("Error saving jobs to localStorage:", error);
   }
 };
 
@@ -25,13 +25,25 @@ export const getJobs = async () => {
 
 export const getJobById = async (id) => {
   const jobs = await getJobs();
-  return jobs.find((job) => job.id === id || job._id === id) || null;
+  if (!id) return null;
+
+  return (
+    jobs.find((j) => {
+      const targetId = String(id).trim();
+      return (
+        String(j.id) === targetId ||
+        String(j._id) === targetId ||
+        String(j.jobId) === targetId ||
+        (j._id && String(j._id.$oid || j._id) === targetId)
+      );
+    }) || null
+  );
 };
 
-export const createJob = async (jobData) => {
+export const addJob = async (jobData) => {
   const jobs = await getJobs();
   const newJob = {
-    id: Date.now().toString(),
+    id: jobData.id || jobData._id || Date.now().toString(),
     ...jobData,
     createdAt: new Date().toISOString(),
   };
@@ -40,22 +52,33 @@ export const createJob = async (jobData) => {
   return newJob;
 };
 
-export const addJob = createJob;
-
-export const updateJob = async (id, updatedData) => {
+export const updateJob = async (id, jobData) => {
   const jobs = await getJobs();
-  const index = jobs.findIndex((j) => j.id === id || j._id === id);
-  if (index !== -1) {
-    jobs[index] = { ...jobs[index], ...updatedData };
-    setStorage(JOBS_KEY, jobs);
-    return jobs[index];
-  }
-  return null;
+  const updatedJobs = jobs.map((j) => {
+    const targetId = String(id).trim();
+    if (
+      String(j.id) === targetId ||
+      String(j._id) === targetId ||
+      String(j.jobId) === targetId
+    ) {
+      return { ...j, ...jobData };
+    }
+    return j;
+  });
+  setStorage(JOBS_KEY, updatedJobs);
+  return updatedJobs;
 };
 
 export const deleteJob = async (id) => {
   const jobs = await getJobs();
-  const filtered = jobs.filter((j) => j.id !== id && j._id !== id);
-  setStorage(JOBS_KEY, filtered);
-  return true;
+  const updatedJobs = jobs.filter((j) => {
+    const targetId = String(id).trim();
+    return (
+      String(j.id) !== targetId &&
+      String(j._id) !== targetId &&
+      String(j.jobId) !== targetId
+    );
+  });
+  setStorage(JOBS_KEY, updatedJobs);
+  return updatedJobs;
 };

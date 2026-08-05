@@ -14,7 +14,7 @@ const setStorage = (key, data) => {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (error) {
-    console.error("Error writing companies to localStorage:", error);
+    console.error("Error saving companies to localStorage:", error);
   }
 };
 
@@ -28,7 +28,7 @@ export const getCompanyById = async (id) => {
   return companies.find((c) => c.id === id || c._id === id) || null;
 };
 
-export const createCompany = async (companyData) => {
+export const addCompany = async (companyData) => {
   const companies = await getCompanies();
   const newCompany = {
     id: Date.now().toString(),
@@ -38,4 +38,22 @@ export const createCompany = async (companyData) => {
   companies.push(newCompany);
   setStorage(COMPANIES_KEY, companies);
   return newCompany;
+};
+
+export const updateCompany = async (id, companyData) => {
+  const companies = await getCompanies();
+  const updatedCompanies = companies.map((c) =>
+    c.id === id || c._id === id ? { ...c, ...companyData } : c
+  );
+  setStorage(COMPANIES_KEY, updatedCompanies);
+  return updatedCompanies;
+};
+
+export const deleteCompany = async (id) => {
+  const companies = await getCompanies();
+  const updatedCompanies = companies.filter(
+    (c) => c.id !== id && c._id !== id
+  );
+  setStorage(COMPANIES_KEY, updatedCompanies);
+  return updatedCompanies;
 };

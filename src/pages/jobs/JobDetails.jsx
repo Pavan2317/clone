@@ -1,112 +1,114 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { getJobById } from "../../services/jobService";
-import { addApplication } from "../../services/applicationService";
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import axios from 'axios';
+import { getJobById } from '../../services/jobService';
 
 const JobDetails = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [applied, setApplied] = useState(false);
+
+  // Get current logged-in user session
+  const currentUser = JSON.parse(localStorage.getItem('user')) || {};
+  
+  // Check user role (adjust "company" or "employer" based on your auth structure)
+  const isCompany = currentUser.role === 'company' || currentUser.role === 'employer';
+  const isCandidate = currentUser.role === 'candidate' || currentUser.role === 'applicant' || !currentUser.role;
 
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        setLoading(true);
-        const data = await getJobById(id);
-        setJob(data);
+        if (id) {
+          const foundJob = await getJobById(id);
+          setJob(foundJob);
+        }
       } catch (err) {
-        console.error("Error loading job details:", err);
-        setError("Failed to load job details.");
+        console.error('Error loading job details:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) fetchJob();
+    fetchJob();
   }, [id]);
 
   const handleApply = async () => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
+    if (!job) return;
 
     try {
-      await addApplication({
-        jobId: job.id || job._id,
-        jobTitle: job.title || job.jobTitle,
-        company: job.company || job.companyName,
-        candidateId: user.id || user._id,
-        candidateName: user.name || user.email,
-        candidateEmail: user.email,
-        status: "Pending",
-      });
+      const applicationPayload = {
+        jobId: job._id || job.id || id,
+        candidateId: currentUser._id || currentUser.id || String(Date.now()),
+        companyId: job.companyId || 'N/A',
+        jobTitle: job.title || job.jobTitle || 'Job Title',
+        company: job.company || 'Company Name',
+        candidateName: currentUser.name || currentUser.username || 'Candidate',
+        status: 'pending',
+      };
+
+      await axios.post('http://localhost:5000/api/applications', applicationPayload);
+
       setApplied(true);
-    } catch (err) {
-      console.error("Error submitting application:", err);
-      alert("Failed to apply. Please try again.");
+      alert('Application successfully saved to database!');
+    } catch (error) {
+      console.error('Failed to save application:', error);
+      alert('Error submitting application to MongoDB.');
     }
   };
 
-  if (loading) return <div className="p-10 text-center dark:text-white">Loading job...</div>;
-  if (error || !job) return <div className="p-10 text-center text-red-500">{error || "Job not found."}</div>;
-
-  const requirements = Array.isArray(job.requirements)
-    ? job.requirements
-    : typeof job.requirements === "string"
-    ? job.requirements.split("\n").filter(Boolean)
-    : [];
+  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (!job) return <div className="p-8 text-center text-red-500">Job not found.</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
-      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-8 rounded shadow">
-        <h1 className="text-3xl font-bold dark:text-white mb-2">
-          {job.title || job.jobTitle || "Untitled Job"}
-        </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
-          {job.company || job.companyName || "Company Secret"}
-        </p>
+    <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mt-6">
+      <div className="flex justify-between items-center mb-6">
+        <Link to="/jobs-list" className="text-indigo-600 hover:underline">
+          ← Back to Jobs
+        </Link>
 
-        <div className="flex gap-4 text-sm text-gray-500 dark:text-gray-400 mb-6">
-          <span>📍 {job.location || "Remote"}</span>
-          <span>💼 {job.type || job.jobType || "Full-time"}</span>
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold dark:text-white mb-2">Description</h2>
-          <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
-            {job.description || "No description provided."}
-          </p>
-        </div>
-
-        {requirements.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold dark:text-white mb-2">Requirements</h2>
-            <ul className="list-disc pl-5 text-gray-700 dark:text-gray-300">
-              {requirements.map((req, idx) => (
-                <li key={idx}>{req}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {user?.role !== "company" && user?.role !== "employer" && (
+        {/* Hide Apply button if logged in as a Company */}
+        {isCompany ? (
+          <span className="bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm font-medium">
+            Employer View
+          </span>
+        ) : (
           <button
             onClick={handleApply}
             disabled={applied}
-            className={`px-6 py-2 rounded text-white font-medium ${
-              applied ? "bg-green-600" : "bg-blue-600 hover:bg-blue-700"
+            className={`px-6 py-2.5 rounded-md font-semibold text-white transition duration-200 ${
+              applied
+                ? 'bg-green-600 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
             }`}
           >
-            {applied ? "Applied!" : "Apply Now"}
+            {applied ? '✓ Applied' : 'Apply Now'}
           </button>
         )}
+      </div>
+
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 capitalize">
+        {job.title || job.jobTitle}
+      </h1>
+      <p className="text-lg text-indigo-600 dark:text-indigo-400 font-medium mb-4">
+        {job.company}
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-md">
+        <div><strong>Location:</strong> {job.location || 'N/A'}</div>
+        <div><strong>Type:</strong> {job.type || 'Full-time'}</div>
+        <div><strong>Salary:</strong> {job.salary || 'Not specified'}</div>
+      </div>
+
+      <hr className="my-6 border-gray-200 dark:border-gray-700" />
+
+      <div>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">
+          Job Description
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+          {job.description || 'No description provided.'}
+        </p>
       </div>
     </div>
   );
