@@ -1,46 +1,41 @@
-import axios from "axios";
+const COMPANIES_KEY = "companies";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const getStorage = (key) => {
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Error reading companies from localStorage:", error);
+    return [];
+  }
+};
 
-// Get all companies
+const setStorage = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error("Error writing companies to localStorage:", error);
+  }
+};
+
 export const getCompanies = async () => {
-  const response = await axios.get(`${API_URL}/companies`);
-  return response.data;
+  const companies = getStorage(COMPANIES_KEY);
+  return Array.isArray(companies) ? companies : [];
 };
 
-// Get company by ID
 export const getCompanyById = async (id) => {
-  const response = await axios.get(`${API_URL}/companies/${id}`);
-  return response.data;
+  const companies = await getCompanies();
+  return companies.find((c) => c.id === id || c._id === id) || null;
 };
 
-// Add company
-export const addCompany = async (companyData) => {
-  const response = await axios.post(`${API_URL}/companies`, companyData);
-  return response.data;
-};
-
-// Update company
-export const updateCompany = async (id, companyData) => {
-  const response = await axios.put(`${API_URL}/companies/${id}`, companyData);
-  return response.data;
-};
-
-// Delete company
-export const deleteCompany = async (id) => {
-  const response = await axios.delete(`${API_URL}/companies/${id}`);
-  return response.data;
-};
-
-// Search companies
-export const searchCompanies = async (keyword) => {
-  const response = await axios.get(`${API_URL}/companies`);
-
-  if (!keyword) return response.data;
-
-  return response.data.filter(company =>
-    (company.companyName || "").toLowerCase().includes(keyword.toLowerCase()) ||
-    (company.location || "").toLowerCase().includes(keyword.toLowerCase()) ||
-    (company.website || "").toLowerCase().includes(keyword.toLowerCase())
-  );
+export const createCompany = async (companyData) => {
+  const companies = await getCompanies();
+  const newCompany = {
+    id: Date.now().toString(),
+    ...companyData,
+    createdAt: new Date().toISOString(),
+  };
+  companies.push(newCompany);
+  setStorage(COMPANIES_KEY, companies);
+  return newCompany;
 };

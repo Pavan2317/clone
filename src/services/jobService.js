@@ -1,52 +1,61 @@
-import axios from "axios";
+const JOBS_KEY = "jobs";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const getStorage = (key) => {
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Error reading jobs from localStorage:", error);
+    return [];
+  }
+};
 
-// Get all jobs
+const setStorage = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error("Error writing jobs to localStorage:", error);
+  }
+};
+
 export const getJobs = async () => {
-  const response = await axios.get(`${API_URL}/jobs`);
-  return response.data;
+  const jobs = getStorage(JOBS_KEY);
+  return Array.isArray(jobs) ? jobs : [];
 };
 
-// Get job by ID
 export const getJobById = async (id) => {
-  const response = await axios.get(`${API_URL}/jobs/${id}`);
-  return response.data;
+  const jobs = await getJobs();
+  return jobs.find((job) => job.id === id || job._id === id) || null;
 };
 
-// Add job
-export const addJob = async (jobData) => {
-  const response = await axios.post(`${API_URL}/jobs`, jobData);
-  return response.data;
+export const createJob = async (jobData) => {
+  const jobs = await getJobs();
+  const newJob = {
+    id: Date.now().toString(),
+    ...jobData,
+    createdAt: new Date().toISOString(),
+  };
+  jobs.push(newJob);
+  setStorage(JOBS_KEY, jobs);
+  return newJob;
 };
 
-// Update job
-export const updateJob = async (id, jobData) => {
-  const response = await axios.put(`${API_URL}/jobs/${id}`, jobData);
-  return response.data;
+export const addJob = createJob;
+
+export const updateJob = async (id, updatedData) => {
+  const jobs = await getJobs();
+  const index = jobs.findIndex((j) => j.id === id || j._id === id);
+  if (index !== -1) {
+    jobs[index] = { ...jobs[index], ...updatedData };
+    setStorage(JOBS_KEY, jobs);
+    return jobs[index];
+  }
+  return null;
 };
 
-// Delete job
 export const deleteJob = async (id) => {
-  const response = await axios.delete(`${API_URL}/jobs/${id}`);
-  return response.data;
-};
-
-// Get jobs by company
-export const getJobsByCompany = async (companyId) => {
-  const response = await axios.get(`${API_URL}/jobs`);
-  return response.data.filter(job => job.companyId === companyId);
-};
-
-// Search jobs
-export const searchJobs = async (keyword) => {
-  const response = await axios.get(`${API_URL}/jobs`);
-
-  if (!keyword) return response.data;
-
-  return response.data.filter(job =>
-    job.title.toLowerCase().includes(keyword.toLowerCase()) ||
-    (job.company || "").toLowerCase().includes(keyword.toLowerCase()) ||
-    job.location.toLowerCase().includes(keyword.toLowerCase())
-  );
+  const jobs = await getJobs();
+  const filtered = jobs.filter((j) => j.id !== id && j._id !== id);
+  setStorage(JOBS_KEY, filtered);
+  return true;
 };
