@@ -1,73 +1,80 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { getCompanies } from "../services/companyService";
 
 const FeaturedCompanies = () => {
-  const navigate = useNavigate();
   const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadCompanies = async () => {
-      const data = await getCompanies();
-      setCompanies(data);
+    const fetchCompanies = async () => {
+      try {
+        const data = await getCompanies();
+        // Ensure data is always an array
+        if (Array.isArray(data)) {
+          setCompanies(data);
+        } else if (data && Array.isArray(data.companies)) {
+          setCompanies(data.companies);
+        } else {
+          setCompanies([]);
+        }
+      } catch (err) {
+        console.error("Error loading featured companies:", err);
+        setCompanies([]);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    loadCompanies();
+    fetchCompanies();
   }, []);
 
+  // Safe array handling
+  const safeCompanies = Array.isArray(companies) ? companies : [];
+
+  if (loading) {
+    return (
+      <div className="py-12 text-center text-gray-500 dark:text-gray-400">
+        Loading featured companies...
+      </div>
+    );
+  }
+
   return (
-    <section className="py-16 bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+    <section className="py-12 bg-white dark:bg-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
           Featured Companies
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {companies.slice(0, 8).map((company, index) => (
-            <div
-              key={company._id || company.id || company.companyName || index}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition duration-300"
-            >
-              <div className="flex items-center mb-4">
-                <img
-                  src={company.logo}
-                  alt={`${company.companyName || company.name} logo`}
-                  className="w-20 h-20 object-contain mr-4"
-                />
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {company.companyName || company.name}
-                  </h3>
-
-                  <div className="flex items-center">
-                    <span className="text-yellow-400">★</span>
-                    <span className="ml-1 text-sm text-gray-600 dark:text-gray-300">
-                      {company.rating || "N/A"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                {company.industry}
-              </p>
-
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500 dark:text-gray-300">
-                  {company.jobs || 0} open jobs
-                </span>
-
-                <button
-                  onClick={() => navigate("/jobs")}
-                  className="bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition duration-300"
+        {safeCompanies.length === 0 ? (
+          <p className="text-gray-600 dark:text-gray-400">No companies found.</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {safeCompanies.slice(0, 4).map((company, index) => {
+              const companyId = company.id || company._id || `company-${index}`;
+              return (
+                <div
+                  key={companyId}
+                  className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg text-center bg-gray-50 dark:bg-gray-900 hover:shadow-md transition-shadow"
                 >
-                  View Jobs
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    {company.name || company.companyName || "Company"}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    {company.location || "Global"}
+                  </p>
+                  <Link
+                    to={`/companies/${companyId}`}
+                    className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline"
+                  >
+                    View Profile
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

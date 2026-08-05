@@ -1,117 +1,91 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { getJobs } from "../services/jobService";
 
-const FeaturedJobs = ({ search }) => {
-  const navigate = useNavigate();
+const FeaturedJobs = () => {
   const [jobs, setJobs] = useState([]);
-
-  const keyword = search?.keyword?.toLowerCase() || "";
-  const location = search?.location?.toLowerCase() || "";
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadJobs = async () => {
+    const fetchJobs = async () => {
       try {
         const data = await getJobs();
-        setJobs(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Failed to load jobs:", error);
+        // Ensure data is always an array
+        if (Array.isArray(data)) {
+          setJobs(data);
+        } else if (data && Array.isArray(data.jobs)) {
+          setJobs(data.jobs);
+        } else {
+          setJobs([]);
+        }
+      } catch (err) {
+        console.error("Error loading featured jobs:", err);
         setJobs([]);
+      } finally {
+        setLoading(false);
       }
     };
 
-    loadJobs();
+    fetchJobs();
   }, []);
 
-  const filteredJobs = jobs.filter((job) => {
-    const jobData = `
-      ${job.title || ""}
-      ${job.company || ""}
-      ${job.description || ""}
-      ${job.requirements || ""}
-    `.toLowerCase();
+  // Safe array handling
+  const safeJobs = Array.isArray(jobs) ? jobs : [];
 
-    const locationData = (job.location || "").toLowerCase();
-
+  if (loading) {
     return (
-      jobData.includes(keyword) &&
-      locationData.includes(location)
+      <div className="py-12 text-center text-gray-500 dark:text-gray-400">
+        Loading featured jobs...
+      </div>
     );
-  });
+  }
 
   return (
-    <section className="py-16 bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-900 dark:text-white">
-          Featured Jobs
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredJobs.map((job, index) => (
-            <div
-              key={job._id || job.id || index}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-colors duration-300"
-            >
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                {job.title}
-              </h3>
-
-              <p className="text-gray-700 dark:text-gray-300">
-                {job.company}
-              </p>
-
-              <p className="text-gray-700 dark:text-gray-300">
-                Location: {job.location}
-              </p>
-
-              <p className="text-gray-700 dark:text-gray-300">
-                Salary: {job.salary}
-              </p>
-
-              <div className="mt-3 flex gap-2 flex-wrap">
-                {job.requirements &&
-                  job.requirements.split(",").map((skill, skillIndex) => (
-                    <span
-                      key={`${job._id || job.id || index}-${skillIndex}`}
-                      className="bg-gray-200 dark:bg-gray-700 dark:text-white px-2 py-1 rounded"
-                    >
-                      {skill.trim()}
-                    </span>
-                  ))}
-              </div>
-
-              <div className="flex gap-3 mt-4">
-                <button
-                  onClick={() => navigate("/jobs")}
-                  className="bg-gray-600 text-white px-4 py-2 rounded"
-                >
-                  View Job
-                </button>
-
-                <button
-                  onClick={() => navigate("/jobs")}
-                  className="bg-blue-600 text-white px-4 py-2 rounded"
-                >
-                  Apply Now
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="text-center mt-10">
+    <section className="py-12 bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Featured Jobs
+          </h2>
           <Link
             to="/jobs"
-            className="bg-blue-600 text-white px-6 py-3 rounded"
+            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 font-medium"
           >
-            View All Jobs
+            View All Jobs →
           </Link>
         </div>
 
-        {filteredJobs.length === 0 && (
-          <p className="text-center mt-5">
-            No jobs found
-          </p>
+        {safeJobs.length === 0 ? (
+          <p className="text-gray-600 dark:text-gray-400">No jobs available right now.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {safeJobs.slice(0, 6).map((job, index) => {
+              const jobId = job.id || job._id || `job-${index}`;
+              return (
+                <div
+                  key={jobId}
+                  className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+                >
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    {job.title || job.jobTitle || "Untitled Job"}
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                    {job.company || job.companyName || "Company Secret"}
+                  </p>
+                  <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    <span>{job.location || "Remote"}</span>
+                    <span>{job.type || job.jobType || "Full-time"}</span>
+                  </div>
+                  <Link
+                    to={`/jobs/${jobId}`}
+                    className="inline-block bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded transition-colors"
+                  >
+                    View Details
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </section>
