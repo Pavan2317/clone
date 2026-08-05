@@ -31,7 +31,7 @@ const Jobs = () => {
     if (window.confirm('Are you sure you want to delete this job?')) {
       try {
         await deleteJob(jobId);
-        setJobs(jobs.filter(job => job.id !== jobId));
+       setJobs(jobs.filter(job => job._id !== jobId));
       } catch (error) {
         console.error('Error deleting job:', error);
         setError('Failed to delete job. Please try again.');
@@ -132,7 +132,7 @@ const Jobs = () => {
                 </thead>
                   <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredJobs.map((job) => (
-                    <tr key={job.id}>
+                    <tr key={job._id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900 dark:text-white">{job.title}</div>
                       </td>
@@ -152,7 +152,7 @@ const Jobs = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end space-x-3">
                         <Link
-                          to={`/jobs/${job.id}`}
+                         to={`/jobs/${job._id}`}
                           className="text-indigo-600 hover:text-indigo-900"
                           title="View details"
                         >
@@ -165,7 +165,7 @@ const Jobs = () => {
                         {canManageJobs && (
                           <>
                             <Link
-                              to={`/jobs/edit/${job.id}`}
+                            to={`/jobs/edit/${job._id}`}
                               className="text-blue-600 hover:text-blue-900"
                               title="Edit job"
                             >
@@ -174,8 +174,8 @@ const Jobs = () => {
                               </svg>
                             </Link>
                             <button
-                              onClick={() => handleDelete(job.id)}
-                              className="text-red-600 hover:text-red-900"
+                             onClick={() => handleDelete(job._id)}
+                             className="text-red-600 hover:text-red-900"
                               title="Delete job"
                             >
                               <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

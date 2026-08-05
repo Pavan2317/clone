@@ -1,70 +1,46 @@
-import { companies as defaultCompanies } from "../data/companies";
+import axios from "axios";
 
-// Load companies from localStorage on initialization
-let companies = JSON.parse(localStorage.getItem('companies')) || defaultCompanies;
+const API_URL = import.meta.env.VITE_API_URL;
 
-// Save companies to localStorage
-const saveCompaniesToStorage = () => {
-  localStorage.setItem('companies', JSON.stringify(companies));
+// Get all companies
+export const getCompanies = async () => {
+  const response = await axios.get(`${API_URL}/companies`);
+  return response.data;
 };
 
-export const getCompanies = () => {
-  return Promise.resolve([...companies]);
+// Get company by ID
+export const getCompanyById = async (id) => {
+  const response = await axios.get(`${API_URL}/companies/${id}`);
+  return response.data;
 };
 
-export const getCompanyById = (id) => {
-  return Promise.resolve(companies.find(company => company.id === id));
+// Add company
+export const addCompany = async (companyData) => {
+  const response = await axios.post(`${API_URL}/companies`, companyData);
+  return response.data;
 };
 
-export const addCompany = (companyData) => {
-  const newCompany = {
-    id: Date.now().toString(),
-    ...companyData,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  companies.push(newCompany);
-  saveCompaniesToStorage();
-  return Promise.resolve(newCompany);
+// Update company
+export const updateCompany = async (id, companyData) => {
+  const response = await axios.put(`${API_URL}/companies/${id}`, companyData);
+  return response.data;
 };
 
-export const updateCompany = (id, updatedData) => {
-  const index = companies.findIndex(company => company.id === id);
-  if (index === -1) {
-    return Promise.reject(new Error('Company not found'));
-  }
-
-  const updatedCompany = {
-    ...companies[index],
-    ...updatedData,
-    updatedAt: new Date().toISOString()
-  };
-
-  companies[index] = updatedCompany;
-  saveCompaniesToStorage();
-  return Promise.resolve(updatedCompany);
+// Delete company
+export const deleteCompany = async (id) => {
+  const response = await axios.delete(`${API_URL}/companies/${id}`);
+  return response.data;
 };
 
-export const deleteCompany = (id) => {
-  const initialLength = companies.length;
-  companies = companies.filter(company => company.id !== id);
-  saveCompaniesToStorage();
+// Search companies
+export const searchCompanies = async (keyword) => {
+  const response = await axios.get(`${API_URL}/companies`);
 
-  if (companies.length === initialLength) {
-    return Promise.reject(new Error('Company not found'));
-  }
+  if (!keyword) return response.data;
 
-  return Promise.resolve({ success: true });
-};
-
-// Search companies by keyword
-export const searchCompanies = (keyword) => {
-  if (!keyword) return Promise.resolve([...companies]);
-
-  const lowerKeyword = keyword.toLowerCase();
-  return Promise.resolve(companies.filter(company =>
-    company.companyName.toLowerCase().includes(lowerKeyword) ||
-    company.location.toLowerCase().includes(lowerKeyword) ||
-    company.website.toLowerCase().includes(lowerKeyword)
-  ));
+  return response.data.filter(company =>
+    (company.companyName || "").toLowerCase().includes(keyword.toLowerCase()) ||
+    (company.location || "").toLowerCase().includes(keyword.toLowerCase()) ||
+    (company.website || "").toLowerCase().includes(keyword.toLowerCase())
+  );
 };

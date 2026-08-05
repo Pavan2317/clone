@@ -1,76 +1,52 @@
-import { jobs as defaultJobs } from "../data/jobs";
+import axios from "axios";
 
-// Load jobs from localStorage on initialization
-let jobs = JSON.parse(localStorage.getItem('jobs')) || defaultJobs;
+const API_URL = import.meta.env.VITE_API_URL;
 
-// Save jobs to localStorage
-const saveJobsToStorage = () => {
-  localStorage.setItem('jobs', JSON.stringify(jobs));
+// Get all jobs
+export const getJobs = async () => {
+  const response = await axios.get(`${API_URL}/jobs`);
+  return response.data;
 };
 
-export const getJobs = () => {
-  return Promise.resolve([...jobs]);
+// Get job by ID
+export const getJobById = async (id) => {
+  const response = await axios.get(`${API_URL}/jobs/${id}`);
+  return response.data;
 };
 
-export const getJobById = (id) => {
-  return Promise.resolve(jobs.find(job => job.id === id));
+// Add job
+export const addJob = async (jobData) => {
+  const response = await axios.post(`${API_URL}/jobs`, jobData);
+  return response.data;
 };
 
-export const addJob = (jobData) => {
-  const newJob = {
-    id: Date.now().toString(),
-    ...jobData,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  jobs.push(newJob);
-  saveJobsToStorage();
-  return Promise.resolve(newJob);
+// Update job
+export const updateJob = async (id, jobData) => {
+  const response = await axios.put(`${API_URL}/jobs/${id}`, jobData);
+  return response.data;
 };
 
-export const updateJob = (id, updatedData) => {
-  const index = jobs.findIndex(job => job.id === id);
-  if (index === -1) {
-    return Promise.reject(new Error('Job not found'));
-  }
-
-  const updatedJob = {
-    ...jobs[index],
-    ...updatedData,
-    updatedAt: new Date().toISOString()
-  };
-
-  jobs[index] = updatedJob;
-  saveJobsToStorage();
-  return Promise.resolve(updatedJob);
+// Delete job
+export const deleteJob = async (id) => {
+  const response = await axios.delete(`${API_URL}/jobs/${id}`);
+  return response.data;
 };
 
-export const deleteJob = (id) => {
-  const initialLength = jobs.length;
-  jobs = jobs.filter(job => job.id !== id);
-  saveJobsToStorage();
-
-  if (jobs.length === initialLength) {
-    return Promise.reject(new Error('Job not found'));
-  }
-
-  return Promise.resolve({ success: true });
+// Get jobs by company
+export const getJobsByCompany = async (companyId) => {
+  const response = await axios.get(`${API_URL}/jobs`);
+  return response.data.filter(job => job.companyId === companyId);
 };
 
-// Get jobs by company (for company users)
-export const getJobsByCompany = (companyId) => {
-  return Promise.resolve(jobs.filter(job => job.companyId === companyId));
-};
+// Search jobs
+export const searchJobs = async (keyword) => {
+  const response = await axios.get(`${API_URL}/jobs`);
 
-// Search jobs by keyword
-export const searchJobs = (keyword) => {
-  if (!keyword) return Promise.resolve([...jobs]);
+  if (!keyword) return response.data;
 
-  const lowerKeyword = keyword.toLowerCase();
-  return Promise.resolve(jobs.filter(job =>
-    job.title.toLowerCase().includes(lowerKeyword) ||
-    job.company.toLowerCase().includes(lowerKeyword) ||
-    job.location.toLowerCase().includes(lowerKeyword) ||
-    job.description.toLowerCase().includes(lowerKeyword)
-  ));
+  return response.data.filter(job =>
+    job.title.toLowerCase().includes(keyword.toLowerCase()) ||
+    (job.company || "").toLowerCase().includes(keyword.toLowerCase()) ||
+    job.location.toLowerCase().includes(keyword.toLowerCase())
+  );
 };

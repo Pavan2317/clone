@@ -1,85 +1,128 @@
-// Load applications from localStorage on initialization
-let applications = JSON.parse(localStorage.getItem('applications') || '[]');
+const APPLICATIONS_KEY = 'applications';
 
-// Save applications to localStorage
-const saveApplicationsToStorage = () => {
-  localStorage.setItem('applications', JSON.stringify(applications));
+// Helper function to safely fetch applications from local storage
+const getStorage = (key) => {
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Error reading from localStorage:', error);
+    return [];
+  }
 };
 
-export const getApplications = () => {
-  return Promise.resolve([...applications]);
+// Helper function to safely write applications to local storage
+const setStorage = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    console.error('Error writing to localStorage:', error);
+  }
 };
 
-export const getApplicationById = (id) => {
-  return Promise.resolve(applications.find(application => application.id === id));
+/**
+ * Fetch applications filtered by current user role
+ */
+export const getApplications = async (user) => {
+  const apps = getStorage(APPLICATIONS_KEY);
+
+  if (!user) return [];
+
+  // Candidate View: Filter applications submitted by the candidate
+  if (user.role === 'candidate') {
+    return apps.filter(
+      (app) =>
+        app.candidateId === user.id ||
+        app.candidateId === user._id ||
+        (user.email && app.candidateEmail === user.email)
+    );
+  }
+
+  // Company / Employer View: Filter applications for jobs posted by this company
+  if (user.role === 'company' || user.role === 'employer') {
+    return apps.filter(
+      (app) =>
+        app.companyId === user.id ||
+        app.companyId === user._id ||
+        (app.company && user.name && app.company.toLowerCase() === user.name.toLowerCase()) ||
+        (app.company && user.companyName && app.company.toLowerCase() === user.companyName.toLowerCase())
+    );
+  }
+
+  // Admin View: Return all applications
+  return apps;
 };
 
-export const addApplication = (applicationData) => {
-  const newApplication = {
+/**
+ * Fetch applications by candidate ID
+ */
+export const getApplicationsByCandidateId = async (candidateId) => {
+  const apps = getStorage(APPLICATIONS_KEY);
+  return apps.filter(
+    (app) => app.candidateId === candidateId || app.candidateId === candidateId?._id
+  );
+};
+
+/**
+ * Fetch applications by company ID
+ */
+export const getApplicationsByCompanyId = async (companyId) => {
+  const apps = getStorage(APPLICATIONS_KEY);
+  return apps.filter(
+    (app) => app.companyId === companyId || app.companyId === companyId?._id
+  );
+};
+
+// Alias exports for candidate-specific calls
+export const getUserApplications = getApplications;
+
+/**
+ * Save a new application to local storage
+ */
+export const addApplication = async (applicationData) => {
+  const apps = getStorage(APPLICATIONS_KEY);
+  const newApp = {
     id: Date.now().toString(),
     ...applicationData,
-    status: 'pending',
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
   };
-  applications.push(newApplication);
-  saveApplicationsToStorage();
-  return Promise.resolve(newApplication);
+  apps.push(newApp);
+  setStorage(APPLICATIONS_KEY, apps);
+  return newApp;
 };
 
-export const updateApplication = (id, updatedData) => {
-  const index = applications.findIndex(application => application.id === id);
-  if (index === -1) {
-    return Promise.reject(new Error('Application not found'));
-  }
+// Alias export for components importing 'createApplication'
+export const createApplication = addApplication;
 
-  const updatedApplication = {
-    ...applications[index],
-    ...updatedData,
-    updatedAt: new Date().toISOString()
-  };
-
-  applications[index] = updatedApplication;
-  saveApplicationsToStorage();
-  return Promise.resolve(updatedApplication);
+/**
+ * Retrieve a specific application by its ID
+ */
+export const getApplicationById = async (id) => {
+  const apps = getStorage(APPLICATIONS_KEY);
+  return apps.find((app) => app.id === id || app._id === id) || null;
 };
 
-export const deleteApplication = (id) => {
-  const initialLength = applications.length;
-  applications = applications.filter(application => application.id !== id);
-  saveApplicationsToStorage();
-
-  if (applications.length === initialLength) {
-    return Promise.reject(new Error('Application not found'));
-  }
-
-  return Promise.resolve({ success: true });
+/**
+ * Update an application status (e.g., 'pending', 'accepted', 'rejected')
+ */
+export const updateApplicationStatus = async (id, status) => {
+  const apps = getStorage(APPLICATIONS_KEY);
+  const updatedApps = apps.map((app) => {
+    if (app.id === id || app._id === id) {
+      return { ...app, status, updatedAt: new Date().toISOString() };
+    }
+    return app;
+  });
+  setStorage(APPLICATIONS_KEY, updatedApps);
+  return true;
 };
 
-// Get applications by job ID (for companies)
-export const getApplicationsByJobId = (jobId) => {
-  return Promise.resolve(applications.filter(application => application.jobId === jobId));
-};
-
-// Get applications by company ID (for companies to see applications for their jobs)
-export const getApplicationsByCompanyId = (companyId) => {
-  return Promise.resolve(applications.filter(application => application.companyId === companyId));
-};
-
-// Get applications by candidate ID (for candidates to see their applications)
-export const getApplicationsByCandidateId = (candidateId) => {
-  return Promise.resolve(applications.filter(application => application.candidateId === candidateId));
-};
-
-// Search applications by keyword
-export const searchApplications = (keyword) => {
-  if (!keyword) return Promise.resolve([...applications]);
-
-  const lowerKeyword = keyword.toLowerCase();
-  return Promise.resolve(applications.filter(application =>
-    application.jobTitle.toLowerCase().includes(lowerKeyword) ||
-    application.company.toLowerCase().includes(lowerKeyword) ||
-    application.candidateName.toLowerCase().includes(lowerKeyword) ||
-    application.status.toLowerCase().includes(lowerKeyword)
-  ));
+/**
+ * Delete an application by ID
+ */
+export const deleteApplication = async (id) => {
+  const apps = getStorage(APPLICATIONS_KEY);
+  const filteredApps = apps.filter((app) => app.id !== id && app._id !== id);
+  setStorage(APPLICATIONS_KEY, filteredApps);
+  return true;
 };

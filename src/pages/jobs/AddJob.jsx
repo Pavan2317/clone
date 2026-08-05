@@ -12,7 +12,7 @@ const AddJob = () => {
   const [formData, setFormData] = useState({
     title: '',
     company: '',
-    companyId: user?.id || '',
+    companyId: user?.id || user?._id || '',
     location: '',
     salary: '',
     experience: '',
@@ -28,22 +28,40 @@ const AddJob = () => {
 
   useEffect(() => {
     const loadCompanies = async () => {
-      const data = await getCompanies();
-      setCompanies(data);
+      try {
+        const data = await getCompanies();
+        setCompanies(data || []);
+      } catch (error) {
+        console.error('Failed to load companies:', error);
+      }
     };
     loadCompanies();
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+
+    if (name === "company") {
+      const selectedCompany = companies.find(
+        (comp) => comp.companyName === value
+      );
+
+      setFormData((prev) => ({
+        ...prev,
+        company: value,
+        companyId: selectedCompany ? (selectedCompany._id || selectedCompany.id) : (user?.id || user?._id || '')
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setErrors({});
     setSuccessMessage('');
 
@@ -62,7 +80,7 @@ const AddJob = () => {
       setFormData({
         title: '',
         company: '',
-        companyId: user?.id || '',
+        companyId: user?.id || user?._id || '',
         location: '',
         salary: '',
         experience: '',
@@ -128,11 +146,15 @@ const AddJob = () => {
                   name="company"
                   value={formData.company}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
                 >
                   <option value="">Select Company</option>
-                  {companies.map(company => (
-                    <option key={company.id} value={company.companyName}>
+
+                  {companies.map((company) => (
+                    <option
+                      key={company._id || company.id}
+                      value={company.companyName}
+                    >
                       {company.companyName}
                     </option>
                   ))}
@@ -241,7 +263,7 @@ const AddJob = () => {
               />
             </div>
 
-            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200 dark:border-gray-700">
               <button
                 type="button"
                 onClick={() => navigate('/jobs-list')}

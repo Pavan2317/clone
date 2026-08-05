@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getJobs } from "../services/jobService";
+import { createApplication } from "../services/applicationService";
 import ApplyModal from "../components/ApplyModal";
 
 const JobsPage = ({ search }) => {
@@ -8,155 +9,130 @@ const JobsPage = ({ search }) => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [jobs, setJobs] = useState([]);
 
+
   useEffect(() => {
     const loadJobs = async () => {
-      const data = await getJobs();
-      setJobs(data);
+      try {
+        const data = await getJobs();
+        setJobs(data);
+      } catch (error) {
+        console.error(error);
+      }
     };
+
     loadJobs();
   }, []);
 
-  const filteredJobs = jobs.filter((job) => {
 
-    const keyword = search?.keyword?.toLowerCase() || "";
-    const location = search?.location?.toLowerCase() || "";
-    const experience = search?.experience?.toLowerCase() || "";
+  const handleSubmit = async (formData) => {
 
-    const keywordMatch =
-      job.title.toLowerCase().includes(keyword) ||
-      job.skills.some(skill =>
-        skill.toLowerCase().includes(keyword)
-      );
+    try {
 
-    const locationMatch =
-      job.location.toLowerCase().includes(location);
+      const applicationData = {
+        jobId: String(selectedJob._id || selectedJob.id),
 
-    const experienceMatch =
-      experience === "" ||
-      job.experience.toLowerCase().includes(experience);
+        candidateId:
+          localStorage.getItem("userId") || "1785783550243",
 
-    return keywordMatch && locationMatch && experienceMatch;
-  });
+        companyId:
+          selectedJob.companyId || "",
 
-  const handleSubmit = (formData) => {
+        jobTitle:
+          selectedJob.title,
 
-    const applications =
-      JSON.parse(localStorage.getItem("applications")) || [];
+        company:
+          selectedJob.company,
 
-    applications.push(formData);
+        candidateName:
+          formData.fullName,
 
-    localStorage.setItem(
-      "applications",
-      JSON.stringify(applications)
-    );
+        candidateEmail:
+          formData.email,
 
-    alert("Application Submitted Successfully");
+        phone:
+          formData.phone,
 
-    setIsModalOpen(false);
+        resume:
+          formData.resume,
+
+        status:
+          "pending"
+      };
+
+
+      await createApplication(applicationData);
+
+      alert("Application Submitted Successfully");
+
+      setIsModalOpen(false);
+      setSelectedJob(null);
+
+
+    } catch(error) {
+
+      console.error(error);
+      alert("Failed to submit application");
+
+    }
+
   };
 
-  return (
-<div className="max-w-7xl mx-auto px-5 py-10 bg-white dark:bg-gray-950 min-h-screen transition-colors duration-300">
 
-<h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">
+  return (
+
+    <div className="max-w-7xl mx-auto px-5 py-10">
+
+      <h1 className="text-3xl font-bold mb-8">
         Available Jobs
       </h1>
 
-      {filteredJobs.length === 0 ? (
-        <p className="text-center text-red-500">
-          No jobs found.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-          {filteredJobs.map((job) => (
+      {jobs.map((job)=>(
 
-            <div
-              key={job.id}
-className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-5 rounded-lg shadow transition-colors duration-300"
-            >
+        <div 
+          key={job._id || job.id}
+          className="border p-5 mb-5 rounded"
+        >
 
-<h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {job.title}
-              </h2>
+          <h2 className="text-xl font-bold">
+            {job.title}
+          </h2>
 
-              <p className="text-gray-700 dark:text-gray-300">
-                <strong>Company:</strong> {job.company}
-              </p>
+          <p>
+            Company: {job.company}
+          </p>
 
-              <p className="text-gray-700 dark:text-gray-300">
-                <strong>Location:</strong> {job.location}
-              </p>
+          <button
+            onClick={()=>{
+              setSelectedJob(job);
+              setIsModalOpen(true);
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded mt-3"
+          >
+            Apply Now
+          </button>
 
-              <p className="text-gray-700 dark:text-gray-300">
-                <strong>Salary:</strong> {job.salary}
-              </p>
-
-              <p className="text-gray-700 dark:text-gray-300">
-                <strong>Experience:</strong> {job.experience}
-              </p>
-
-            <div className="flex gap-3 mt-4">
-  <button
-    onClick={() => setSelectedJob(job)}
-    className="bg-gray-700 text-white px-4 py-2 rounded"
-  >
-    View Job
-  </button>
-
-  <button
-    onClick={() => setIsModalOpen(true)}
-    className="bg-blue-600 text-white px-4 py-2 rounded"
-  >
-    Apply Now
-  </button>
-</div>
-            </div>
-
-          ))}
 
         </div>
-      )}
 
-      {selectedJob && (
-  <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-40">
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-[500px] max-w-[90%]">
-      <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-        {selectedJob.title}
-      </h2>
+      ))}
 
-      <p><strong>Company:</strong> {selectedJob.company}</p>
-      <p><strong>Location:</strong> {selectedJob.location}</p>
-      <p><strong>Salary:</strong> {selectedJob.salary}</p>
-      <p><strong>Experience:</strong> {selectedJob.experience}</p>
-      <p>
-        <strong>Skills:</strong>{" "}
-        {selectedJob.skills.join(", ")}
-      </p>
-
-      <p className="mt-3">
-        <strong>Description:</strong><br />
-        {selectedJob.description}
-      </p>
-
-      <button
-        onClick={() => setSelectedJob(null)}
-        className="mt-5 bg-red-600 text-white px-4 py-2 rounded"
-      >
-        Close
-      </button>
-    </div>
-  </div>
-)}
 
       <ApplyModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={()=>{
+          setIsModalOpen(false);
+          setSelectedJob(null);
+        }}
         onSubmit={handleSubmit}
       />
 
+
     </div>
+
   );
+
 };
+
 
 export default JobsPage;

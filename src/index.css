@@ -4,19 +4,21 @@
 
 html,
 body,
-#root{
-    width:100%;
-    min-height:100%;
-    margin:0;
-    padding:0;
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
-body{
-    background:#ffffff;
+body {
+  background: #ffffff;
+  overflow-x: hidden;
 }
 
-html.dark body{
-    background:#030712;
+html.dark body {
+  background: #030712;
 }
 
 *,
@@ -26,13 +28,20 @@ html.dark body{
 }
 
 img,
-svg {
+svg,
+video,
+canvas {
   max-width: 100%;
   height: auto;
 }
 
 button,
 input,
-select {
+select,
+textarea {
   max-width: 100%;
+}
+
+table {
+  width: 100%;
 }
