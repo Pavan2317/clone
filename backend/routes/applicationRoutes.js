@@ -8,6 +8,7 @@ import {
   deleteApplication,
   getApplicationsByCandidateId,
   getApplicationsByCompanyId,
+  updateApplicationStatus,
 } from "../controllers/applicationController.js";
 
 // Optional: Import your auth middleware if available
@@ -29,6 +30,9 @@ router.get("/company/:companyId", getApplicationsByCompanyId);
 
 // Get single application
 router.get("/:id", getApplicationById);
+
+// Update application status
+router.put("/:id/status", updateApplicationStatus);
 
 // Update application
 router.put("/:id", updateApplication);

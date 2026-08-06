@@ -1,11 +1,8 @@
-# Task Progress
+# TODO: Fix Application Details View
 
-## Fixes
-- [x] Fix 1: Update Job model (`backend/models/Job.js`)
-- [x] Fix 2: Update AddJob.jsx handleChange (`src/pages/jobs/AddJob.jsx`)
-
-## Application integration with MongoDB
-- [x] Fix 3: Make `companyId` required in Application model (`backend/models/Application.js`)
-- [x] Fix 4: Update createApplication controller to accept `status` from body (`backend/controllers/applicationController.js`)
-- [x] Fix 5: Update JobDetails.jsx to POST application to MongoDB API (`src/pages/jobs/JobDetails.jsx`)
-
+## Steps
+- [x] Verify backend routes exist (PUT /:id/status and GET /:id already present)
+- [x] Fix "View" button navigation in `src/pages/applications/Applications.jsx` to go to `/applications/:id`
+- [x] Add `/applications/:id` route to `src/App.jsx`
+- [x] Create `src/pages/applications/ApplicationDetails.jsx` component
+- [x] Verify build / run dev servers

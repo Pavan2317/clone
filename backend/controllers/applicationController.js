@@ -98,6 +98,37 @@ export const getApplicationsByCompanyId = async (req, res) => {
   }
 };
 
+// Update application status
+export const updateApplicationStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    // Validate allowed status values
+    const validStatuses = ["Pending", "Reviewed", "Accepted", "Rejected"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    const updatedApplication = await Application.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true } // Returns the updated document
+    );
+
+    if (!updatedApplication) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    res.status(200).json({
+      message: "Status updated successfully",
+      application: updatedApplication,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Update application
 export const updateApplication = async (req, res) => {
   try {

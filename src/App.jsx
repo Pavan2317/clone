@@ -38,6 +38,7 @@ import CompanyDetails from "./pages/companies/CompanyDetails";
 
 // Applications
 import Applications from "./pages/applications/Applications";
+import ApplicationDetails from "./pages/applications/ApplicationDetails";
 
 function Home({ setSearch }) {
   return (
@@ -173,12 +174,21 @@ function App() {
           }
         />
 
-        {/* Applications */}
+{/* Applications */}
         <Route
           path="/applications"
           element={
             <ProtectedRoute>
               <Applications />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/applications/:id"
+          element={
+            <ProtectedRoute>
+              <ApplicationDetails />
             </ProtectedRoute>
           }
         />

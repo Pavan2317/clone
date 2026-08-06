@@ -5,6 +5,7 @@ import {
   getApplications,
   getApplicationsByCandidateId,
   getApplicationsByCompanyId,
+  updateApplicationStatus,
   deleteApplication,
 } from "../../services/applicationService";
 
@@ -67,6 +68,28 @@ const Applications = () => {
     }
   };
 
+  // Whether the user can update application status
+  const canUpdateStatus =
+    user?.role === "admin" ||
+    user?.role === "employer" ||
+    user?.role === "recruiter" ||
+    user?.role === "company";
+
+const handleStatusChange = async (appId, status) => {
+    try {
+      await updateApplicationStatus(appId, status);
+      // Update local state so UI reflects the new status
+      setApplications((prev) =>
+        prev.map((app) =>
+          (app._id === appId || app.id === appId) ? { ...app, status } : app
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update status:", err);
+      alert("Failed to update status. Please try again.");
+    }
+  };
+
   const filteredApplications = applications.filter((app) => {
     const searchString = (
       (app.jobTitle || app.job?.title || "") +
@@ -120,7 +143,7 @@ const Applications = () => {
             </thead>
             <tbody>
               {filteredApplications.map((application, index) => {
-                const appId = application.job?._id || application.job || application._id || `app-${index}`;
+                const appId = application._id || application.id || `app-${index}`;
                 return (
                   <tr
                     key={appId}
@@ -137,15 +160,34 @@ const Applications = () => {
                         application.candidateId?.name ||
                         "N/A"}
                     </td>
-                    <td className="p-3">{application.status || "Pending"}</td>
                     <td className="p-3">
+                      {canUpdateStatus ? (
+                        <select
+                          value={application.status || "Pending"}
+                          onChange={(e) =>
+                            handleStatusChange(
+                              application._id || application.id,
+                              e.target.value
+                            )
+                          }
+                          className="border p-1 rounded bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Reviewed">Reviewed</option>
+                          <option value="Accepted">Accepted</option>
+                          <option value="Rejected">Rejected</option>
+                        </select>
+                      ) : (
+                        application.status || "Pending"
+                      )}
+                    </td>
+                    <td className="p-3">
+                      {/* FIX: Navigate to Application ID instead of Job ID */}
                       <button
                         onClick={() =>
                           navigate(
-                            `/jobs/${
-                              application.jobId?._id ||
-                              application.jobId ||
-                              application.job?._id || application.job
+                            `/applications/${
+                              application._id || application.id
                             }`
                           )
                         }

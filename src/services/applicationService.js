@@ -1,94 +1,88 @@
-const APPLICATIONS_KEY = 'applications';
+import axios from "axios";
 
-// Helper function to safely fetch applications from local storage
-const getStorage = (key) => {
+// Update port 5000 if your backend runs on a different port
+const API_URL = "http://localhost:5000/api/applications";
+
+// Helper function to attach JWT Token to requests
+const getAuthHeader = () => {
+  const token = localStorage.getItem("token");
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+};
+
+/**
+ * Get all applications for a user based on role
+ * - admin / employer / company: fetch all applications
+ * - candidate: fetch applications specific to the candidate
+ */
+export const getApplications = async (user) => {
   try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : [];
+    if (user?.role === "candidate" || user?.role === "applicant" || user?.role === "jobSeeker") {
+      const response = await axios.get(
+        `${API_URL}/candidate/${user.id || user._id}`,
+        getAuthHeader()
+      );
+      return response.data;
+    }
+
+    // Admin / employer / company: fetch all applications
+    const response = await axios.get(API_URL, getAuthHeader());
+    return response.data;
   } catch (error) {
-    console.error('Error reading from localStorage:', error);
+    console.error("Error fetching applications from MongoDB:", error);
     return [];
   }
 };
 
-// Helper function to safely write applications to local storage
-const setStorage = (key, data) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(data));
-  } catch (error) {
-    console.error('Error writing to localStorage:', error);
-  }
-};
-
 /**
- * Fetch applications filtered by current user role
- */
-export const getApplications = async (user) => {
-  const apps = getStorage(APPLICATIONS_KEY);
-
-  if (!user) return [];
-
-  // Candidate View: Filter applications submitted by the candidate
-  if (user.role === 'candidate') {
-    return apps.filter(
-      (app) =>
-        app.candidateId === user.id ||
-        app.candidateId === user._id ||
-        (user.email && app.candidateEmail === user.email)
-    );
-  }
-
-  // Company / Employer View: Filter applications for jobs posted by this company
-  if (user.role === 'company' || user.role === 'employer') {
-    return apps.filter(
-      (app) =>
-        app.companyId === user.id ||
-        app.companyId === user._id ||
-        (app.company && user.name && app.company.toLowerCase() === user.name.toLowerCase()) ||
-        (app.company && user.companyName && app.company.toLowerCase() === user.companyName.toLowerCase())
-    );
-  }
-
-  // Admin View: Return all applications
-  return apps;
-};
-
-/**
- * Fetch applications by candidate ID
+ * Get applications for a specific candidate
  */
 export const getApplicationsByCandidateId = async (candidateId) => {
-  const apps = getStorage(APPLICATIONS_KEY);
-  return apps.filter(
-    (app) => app.candidateId === candidateId || app.candidateId === candidateId?._id
-  );
+  try {
+    const response = await axios.get(
+      `${API_URL}/candidate/${candidateId}`,
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching candidate applications:", error);
+    return [];
+  }
 };
 
+// Alias for candidate-specific calls
+export const getApplicationsByCandidate = getApplicationsByCandidateId;
+
 /**
- * Fetch applications by company ID
+ * Get applications for a specific company
  */
 export const getApplicationsByCompanyId = async (companyId) => {
-  const apps = getStorage(APPLICATIONS_KEY);
-  return apps.filter(
-    (app) => app.companyId === companyId || app.companyId === companyId?._id
-  );
+  try {
+    const response = await axios.get(
+      `${API_URL}/company/${companyId}`,
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching company applications:", error);
+    return [];
+  }
 };
 
-// Alias exports for candidate-specific calls
-export const getUserApplications = getApplications;
-
 /**
- * Save a new application to local storage
+ * Add a new application (MongoDB creates the real _id)
  */
 export const addApplication = async (applicationData) => {
-  const apps = getStorage(APPLICATIONS_KEY);
-  const newApp = {
-    id: Date.now().toString(),
-    ...applicationData,
-    createdAt: new Date().toISOString(),
-  };
-  apps.push(newApp);
-  setStorage(APPLICATIONS_KEY, apps);
-  return newApp;
+  try {
+    const response = await axios.post(API_URL, applicationData, getAuthHeader());
+    return response.data; // Returned object has real MongoDB _id
+  } catch (error) {
+    console.error("Error adding application:", error);
+    throw error;
+  }
 };
 
 // Alias export for components importing 'createApplication'
@@ -98,31 +92,45 @@ export const createApplication = addApplication;
  * Retrieve a specific application by its ID
  */
 export const getApplicationById = async (id) => {
-  const apps = getStorage(APPLICATIONS_KEY);
-  return apps.find((app) => app.id === id || app._id === id) || null;
+  try {
+    const response = await axios.get(`${API_URL}/${id}`, getAuthHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching application:", error);
+    return null;
+  }
 };
 
 /**
- * Update an application status (e.g., 'pending', 'accepted', 'rejected')
+ * Update application status in MongoDB
  */
 export const updateApplicationStatus = async (id, status) => {
-  const apps = getStorage(APPLICATIONS_KEY);
-  const updatedApps = apps.map((app) => {
-    if (app.id === id || app._id === id) {
-      return { ...app, status, updatedAt: new Date().toISOString() };
-    }
-    return app;
-  });
-  setStorage(APPLICATIONS_KEY, updatedApps);
-  return true;
+  try {
+    const response = await axios.put(
+      `${API_URL}/${id}/status`,
+      { status },
+      getAuthHeader()
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating application status:", error);
+    throw error;
+  }
 };
 
 /**
  * Delete an application by ID
  */
 export const deleteApplication = async (id) => {
-  const apps = getStorage(APPLICATIONS_KEY);
-  const filteredApps = apps.filter((app) => app.id !== id && app._id !== id);
-  setStorage(APPLICATIONS_KEY, filteredApps);
-  return true;
+  try {
+    const response = await axios.delete(`${API_URL}/${id}`, getAuthHeader());
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting application:", error);
+    throw error;
+  }
 };
+
+// Alias export for components importing 'getUserApplications'
+export const getUserApplications = getApplications;
+
