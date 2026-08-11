@@ -1,3 +1,5 @@
+// src/utils/storage.js
+
 export const setItem = (key, value) => {
   try {
     localStorage.setItem(key, JSON.stringify(value));

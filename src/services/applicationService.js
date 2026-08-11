@@ -1,14 +1,15 @@
 import axios from "axios";
+import { getItem, setItem } from "../utils/storage";
 
 // Update port 5000 if your backend runs on a different port
 const API_URL = "http://localhost:5000/api/applications";
 
-// Helper function to attach JWT Token to requests
+// Helper function to attach JWT Token to requests safely using storage utility
 const getAuthHeader = () => {
-  const token = localStorage.getItem("token");
+  const token = getItem("token");
   return {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: token ? `Bearer ${token}` : "",
     },
   };
 };
@@ -25,15 +26,17 @@ export const getApplications = async (user) => {
         `${API_URL}/candidate/${user.id || user._id}`,
         getAuthHeader()
       );
+      setItem("applications", response.data);
       return response.data;
     }
 
     // Admin / employer / company: fetch all applications
     const response = await axios.get(API_URL, getAuthHeader());
+    setItem("applications", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error fetching applications from MongoDB:", error);
-    return [];
+    console.error("Error fetching applications from MongoDB, checking local storage:", error);
+    return getItem("applications", []);
   }
 };
 
@@ -48,8 +51,9 @@ export const getApplicationsByCandidateId = async (candidateId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching candidate applications:", error);
-    return [];
+    console.error("Error fetching candidate applications, checking local storage:", error);
+    const allApps = getItem("applications", []);
+    return allApps.filter(app => app.candidateId === candidateId || app.userId === candidateId);
   }
 };
 
@@ -67,21 +71,29 @@ export const getApplicationsByCompanyId = async (companyId) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error fetching company applications:", error);
-    return [];
+    console.error("Error fetching company applications, checking local storage:", error);
+    const allApps = getItem("applications", []);
+    return allApps.filter(app => app.companyId === companyId);
   }
 };
 
 /**
- * Add a new application (MongoDB creates the real _id)
+ * Add a new application
  */
 export const addApplication = async (applicationData) => {
   try {
     const response = await axios.post(API_URL, applicationData, getAuthHeader());
-    return response.data; // Returned object has real MongoDB _id
+    return response.data;
   } catch (error) {
-    console.error("Error adding application:", error);
-    throw error;
+    console.error("Error adding application, saving locally:", error);
+    
+    // Save locally so the action doesn't break user flow
+    const localApps = getItem("applications", []);
+    const newApp = { ...applicationData, _id: Date.now().toString(), status: "Pending" };
+    localApps.push(newApp);
+    setItem("applications", localApps);
+    
+    return newApp;
   }
 };
 
@@ -96,8 +108,9 @@ export const getApplicationById = async (id) => {
     const response = await axios.get(`${API_URL}/${id}`, getAuthHeader());
     return response.data;
   } catch (error) {
-    console.error("Error fetching application:", error);
-    return null;
+    console.error("Error fetching application from server:", error);
+    const localApps = getItem("applications", []);
+    return localApps.find(app => (app._id === id || app.id === id)) || null;
   }
 };
 
@@ -113,8 +126,15 @@ export const updateApplicationStatus = async (id, status) => {
     );
     return response.data;
   } catch (error) {
-    console.error("Error updating application status:", error);
-    throw error;
+    console.error("Error updating application status, applying local fallback:", error);
+    
+    const localApps = getItem("applications", []);
+    const updatedApps = localApps.map(app => 
+      (app._id === id || app.id === id) ? { ...app, status } : app
+    );
+    setItem("applications", updatedApps);
+    
+    return { _id: id, status, updatedLocally: true };
   }
 };
 
@@ -126,11 +146,15 @@ export const deleteApplication = async (id) => {
     const response = await axios.delete(`${API_URL}/${id}`, getAuthHeader());
     return response.data;
   } catch (error) {
-    console.error("Error deleting application:", error);
-    throw error;
+    console.error("Error deleting application, applying local fallback:", error);
+    
+    const localApps = getItem("applications", []);
+    const updatedApps = localApps.filter(app => app._id !== id && app.id !== id);
+    setItem("applications", updatedApps);
+    
+    return { success: true, id, deletedLocally: true };
   }
 };
 
 // Alias export for components importing 'getUserApplications'
 export const getUserApplications = getApplications;
-
