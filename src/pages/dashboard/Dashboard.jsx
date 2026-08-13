@@ -3,20 +3,33 @@ import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { getJobs } from '../../services/jobService';
 import { getCompanies } from '../../services/companyService';
+import { getApplications } from '../../services/applicationService'; // Import the service
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [jobCount, setJobCount] = useState(0);
   const [companyCount, setCompanyCount] = useState(0);
   const [userCount, setUserCount] = useState(0);
+  const [applications, setApplications] = useState([]);
+
+  // Extract nested user data safely if backend returned { user: { ... } } or { data: { ... } }
+  const currentUser = user?.user || user?.data || user;
+  const userRole = (currentUser?.role || 'candidate').toLowerCase();
+  const userName = currentUser?.name || currentUser?.username || currentUser?.email?.split('@')[0] || "User";
 
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Fetch jobs and companies for counts/display
         const jobs = await getJobs();
         const companies = await getCompanies();
 
-        // Safely parse users from localStorage
+        // Fetch applications safely using the current user object (has proper ID guard clauses now)
+        if (currentUser) {
+          const userApps = await getApplications(currentUser);
+          setApplications(Array.isArray(userApps) ? userApps : []);
+        }
+
         let users = [];
         try {
           const rawUsers = localStorage.getItem("users");
@@ -26,7 +39,6 @@ const Dashboard = () => {
           users = [];
         }
 
-        // Ensure arrays before reading length
         const safeJobs = Array.isArray(jobs)
           ? jobs
           : jobs && Array.isArray(jobs.jobs)
@@ -50,27 +62,30 @@ const Dashboard = () => {
     };
 
     loadData();
-  }, []);
+  }, [user]); // Re-run if user object updates/loads asynchronously
 
   const renderCandidateDashboard = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-          Welcome back, {user?.name || "Candidate"}!
+          Welcome back, {userName}!
         </h2>
         <p className="text-gray-600 dark:text-gray-300">Here's your candidate dashboard overview.</p>
+        <p className="text-sm text-indigo-600 dark:text-indigo-400 mt-4">
+          Total Applications: {applications.length}
+        </p>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Job Applications</h2>
         <p className="text-gray-600 dark:text-gray-300">View and manage your job applications.</p>
-        <Link to="/applications" className="text-indigo-600 hover:text-indigo-500 mt-2 inline-block">
+        <Link to="/applications" className="text-indigo-600 hover:text-indigo-500 mt-2 inline-block font-medium">
           View Applications →
         </Link>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Saved Jobs</h2>
         <p className="text-gray-600 dark:text-gray-300">Jobs you've saved for later.</p>
-        <Link to="/jobs-list" className="text-indigo-600 hover:text-indigo-500 mt-2 inline-block">
+        <Link to="/jobs-list" className="text-indigo-600 hover:text-indigo-500 mt-2 inline-block font-medium">
           Browse Jobs →
         </Link>
       </div>
@@ -81,21 +96,21 @@ const Dashboard = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
-          Welcome back, {user?.name || "Employer"}!
+          Welcome back, {userName}!
         </h2>
         <p className="text-gray-600 dark:text-gray-300">Here's your company dashboard overview.</p>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Your Job Postings</h2>
         <p className="text-gray-600 dark:text-gray-300">Manage your posted jobs and applications.</p>
-        <Link to="/jobs-list" className="text-indigo-600 hover:text-indigo-500 mt-2 inline-block">
+        <Link to="/jobs-list" className="text-indigo-600 hover:text-indigo-500 mt-2 inline-block font-medium">
           Manage Jobs →
         </Link>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Applications Received</h2>
         <p className="text-gray-600 dark:text-gray-300">View applications for your job postings.</p>
-        <Link to="/applications" className="text-indigo-600 hover:text-indigo-500 mt-2 inline-block">
+        <Link to="/applications" className="text-indigo-600 hover:text-indigo-500 mt-2 inline-block font-medium">
           View Applications →
         </Link>
       </div>
@@ -117,7 +132,7 @@ const Dashboard = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Admin Dashboard</h2>
-        <p className="text-gray-600 dark:text-gray-300">Welcome, {user?.name || "Admin"}! Here's the system overview.</p>
+        <p className="text-gray-600 dark:text-gray-300">Welcome, {userName}! Here's the system overview.</p>
       </div>
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md transition-colors duration-300">
         <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Total Users</h2>
@@ -156,15 +171,12 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Dashboard</h1>
 
-        {user?.role === 'candidate' && renderCandidateDashboard()}
-        {(user?.role === 'company' || user?.role === 'employer') && renderCompanyDashboard()}
-        {user?.role === 'admin' && renderAdminDashboard()}
-
-        {!user && (
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center transition-colors duration-300">
-            <p className="text-gray-600 dark:text-gray-300">Please log in to view your dashboard.</p>
-          </div>
-        )}
+        {/* Role Matching with Fallback */}
+        {userRole === 'admin'
+          ? renderAdminDashboard()
+          : userRole === 'company' || userRole === 'employer'
+          ? renderCompanyDashboard()
+          : renderCandidateDashboard()}
       </div>
     </div>
   );

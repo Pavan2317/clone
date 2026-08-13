@@ -9,6 +9,7 @@ const Login = () => {
   });
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const { login, error: authError } = useAuth();
   const navigate = useNavigate();
 
@@ -24,15 +25,29 @@ const Login = () => {
     e.preventDefault();
     setError(null);
 
-    try {
-      const result = await login(formData.email, formData.password);
+    // Basic frontend input check
+    if (!formData.email || !formData.password) {
+      setError('Please fill in both email and password.');
+      return;
+    }
 
-      if (!result.success) {
-        setError(result.error || 'Login failed');
+    setLoading(true);
+
+    try {
+      console.log('Initiating login API call...');
+      const result = await login(formData.email, formData.password, rememberMe);
+
+      // Check if login succeeded and navigate to dashboard or home page
+      if (result && (result.success || result.status === 200 || result.token)) {
+        navigate('/dashboard'); // Change '/dashboard' to your home/landing route
+      } else {
+        setError(result?.error || result?.message || 'Login failed');
       }
-    } catch (error) {
-      setError('Login failed. Please try again.');
-      console.error('Login error:', error);
+    } catch (err) {
+      console.error('Login error details:', err);
+      setError(err?.response?.data?.message || err?.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -112,15 +127,21 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              disabled={loading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              Sign in
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
         </form>
 
         <div className="text-center text-sm text-gray-600 dark:text-gray-300">
-          <p>Don't have an account? <button onClick={() => navigate('/register')} className="font-medium text-indigo-600 hover:text-indigo-500">Register here</button></p>
+          <p>
+            Don't have an account?{' '}
+            <button onClick={() => navigate('/register')} className="font-medium text-indigo-600 hover:text-indigo-500">
+              Register here
+            </button>
+          </p>
         </div>
       </div>
     </div>

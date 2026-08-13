@@ -22,8 +22,14 @@ const getAuthHeader = () => {
 export const getApplications = async (user) => {
   try {
     if (user?.role === "candidate" || user?.role === "applicant" || user?.role === "jobSeeker") {
+      const candidateId = user.id || user._id;
+      if (!candidateId) {
+        console.warn("Candidate ID is missing, skipping API call to avoid 'undefined'");
+        return getItem("applications", []);
+      }
+
       const response = await axios.get(
-        `${API_URL}/candidate/${user.id || user._id}`,
+        `${API_URL}/candidate/${candidateId}`,
         getAuthHeader()
       );
       setItem("applications", response.data);
@@ -44,6 +50,11 @@ export const getApplications = async (user) => {
  * Get applications for a specific candidate
  */
 export const getApplicationsByCandidateId = async (candidateId) => {
+  if (!candidateId) {
+    console.warn("getApplicationsByCandidateId called with missing/undefined ID");
+    return [];
+  }
+
   try {
     const response = await axios.get(
       `${API_URL}/candidate/${candidateId}`,
@@ -64,6 +75,11 @@ export const getApplicationsByCandidate = getApplicationsByCandidateId;
  * Get applications for a specific company
  */
 export const getApplicationsByCompanyId = async (companyId) => {
+  if (!companyId) {
+    console.warn("getApplicationsByCompanyId called with missing/undefined ID");
+    return [];
+  }
+
   try {
     const response = await axios.get(
       `${API_URL}/company/${companyId}`,
@@ -104,6 +120,11 @@ export const createApplication = addApplication;
  * Retrieve a specific application by its ID
  */
 export const getApplicationById = async (id) => {
+  if (!id) {
+    console.warn("getApplicationById called with missing/undefined ID");
+    return null;
+  }
+
   try {
     const response = await axios.get(`${API_URL}/${id}`, getAuthHeader());
     return response.data;
@@ -118,6 +139,11 @@ export const getApplicationById = async (id) => {
  * Update application status in MongoDB
  */
 export const updateApplicationStatus = async (id, status) => {
+  if (!id) {
+    console.warn("updateApplicationStatus called with missing/undefined ID");
+    return null;
+  }
+
   try {
     const response = await axios.put(
       `${API_URL}/${id}/status`,
@@ -142,6 +168,11 @@ export const updateApplicationStatus = async (id, status) => {
  * Delete an application by ID
  */
 export const deleteApplication = async (id) => {
+  if (!id) {
+    console.warn("deleteApplication called with missing/undefined ID");
+    return null;
+  }
+
   try {
     const response = await axios.delete(`${API_URL}/${id}`, getAuthHeader());
     return response.data;

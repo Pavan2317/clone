@@ -1,81 +1,40 @@
-import {
-  getUserByUsername,
-  saveCurrentUser,
-  removeCurrentUser,
-  userExists,
-  addUser
-} from './storage';
-import { validateEmail, validatePassword, validateName } from './validation';
+import axios from 'axios';
 
-export const loginUser = async (username, password) => {
-  try {
-    const user = getUserByUsername(username);
-
-    if (!user) {
-      return { success: false, error: 'User not found' };
-    }
-
-    if (user.password !== password) {
-      return { success: false, error: 'Invalid password' };
-    }
-
-    saveCurrentUser(user);
-    return { success: true, user };
-  } catch (error) {
-    console.error('Login error:', error);
-    return { success: false, error: 'Login failed' };
-  }
-};
+// Change this base URL to match your backend port (e.g., http://localhost:5000/api)
+const API_BASE_URL = 'http://localhost:5000/api/auth';
 
 export const registerUser = async (userData) => {
   try {
-    // Validate form data
-    if (!validateName(userData.name)) {
-      return { success: false, error: 'Name must be at least 2 characters' };
-    }
-
-    if (!validateEmail(userData.email)) {
-      return { success: false, error: 'Please enter a valid email' };
-    }
-
-    if (!validatePassword(userData.password)) {
-      return { success: false, error: 'Password must be at least 6 characters' };
-    }
-
-    if (userData.password !== userData.confirmPassword) {
-      return { success: false, error: 'Passwords do not match' };
-    }
-
-    // Check if username already exists
-    if (userExists(userData.email)) {
-      return { success: false, error: 'Username already exists' };
-    }
-
-    // Create user object
-    const newUser = {
-      id: Date.now().toString(),
-      username: userData.email,
-      name: userData.name,
-      password: userData.password,
-      role: userData.role,
-      createdAt: new Date().toISOString()
-    };
-
-    // Save user
-    addUser(newUser);
-    return { success: true, user: newUser };
+    // This axios line forces the browser to make a REAL Network API call
+    const response = await axios.post(`${API_BASE_URL}/register`, userData);
+    return { success: true, data: response.data };
   } catch (error) {
-    console.error('Registration error:', error);
-    return { success: false, error: 'Registration failed' };
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Registration failed'
+    };
   }
 };
 
-export const logoutUser = () => {
+export const loginUser = async (email, password) => {
   try {
-    removeCurrentUser();
-    return { success: true };
+    // This axios line forces the browser to make a REAL Network API call
+    const response = await axios.post(`${API_BASE_URL}/login`, { email, password });
+    
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    
+    return { success: true, user: response.data.user || response.data };
   } catch (error) {
-    console.error('Logout error:', error);
-    return { success: false, error: 'Logout failed' };
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Login failed'
+    };
   }
+};
+
+export const logoutUser = async () => {
+  localStorage.removeItem('token');
+  return { success: true };
 };

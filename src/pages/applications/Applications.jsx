@@ -20,23 +20,32 @@ const Applications = () => {
 
   useEffect(() => {
     const fetchApplications = async () => {
+      // Safely extract nested user data and ID
+      const currentUser = user?.user || user?.data || user;
+      const userId = currentUser?.id || currentUser?._id;
+      const userRole = (currentUser?.role || "candidate").toLowerCase();
+
+      // Guard clause: if candidate role exists but ID isn't ready yet, wait
+      if (userRole === "candidate" && !userId) {
+        return;
+      }
+
       try {
         setLoading(true);
         let data = [];
 
         // Route API call based on user role
-        if (user?.role === "admin") {
-          data = await getApplications(user);
+        if (userRole === "admin") {
+          data = await getApplications(currentUser);
         } else if (
-          user?.role === "employer" ||
-          user?.role === "recruiter" ||
-          user?.role === "company"
+          userRole === "employer" ||
+          userRole === "recruiter" ||
+          userRole === "company"
         ) {
-          // Pass full user object so fallback matching by name works
-          data = await getApplications(user);
+          data = await getApplications(currentUser);
         } else {
           // Default to Candidate / JobSeeker
-          data = await getApplicationsByCandidateId(user?.id || user?._id);
+          data = await getApplicationsByCandidateId(userId);
         }
 
         setApplications(Array.isArray(data) ? data : []);
@@ -68,14 +77,18 @@ const Applications = () => {
     }
   };
 
+  // Extract current user details for status checks
+  const currentUser = user?.user || user?.data || user;
+  const userRole = (currentUser?.role || "").toLowerCase();
+
   // Whether the user can update application status
   const canUpdateStatus =
-    user?.role === "admin" ||
-    user?.role === "employer" ||
-    user?.role === "recruiter" ||
-    user?.role === "company";
+    userRole === "admin" ||
+    userRole === "employer" ||
+    userRole === "recruiter" ||
+    userRole === "company";
 
-const handleStatusChange = async (appId, status) => {
+  const handleStatusChange = async (appId, status) => {
     try {
       await updateApplicationStatus(appId, status);
       // Update local state so UI reflects the new status
@@ -182,7 +195,6 @@ const handleStatusChange = async (appId, status) => {
                       )}
                     </td>
                     <td className="p-3">
-                      {/* FIX: Navigate to Application ID instead of Job ID */}
                       <button
                         onClick={() =>
                           navigate(
@@ -196,7 +208,7 @@ const handleStatusChange = async (appId, status) => {
                         View
                       </button>
 
-                      {user?.role === "admin" && (
+                      {userRole === "admin" && (
                         <button
                           onClick={() => handleDelete(appId)}
                           className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
