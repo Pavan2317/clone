@@ -12,7 +12,15 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+// ✅ FIXED: Allow requests from frontend (Port 3002)
+app.use(
+  cors({
+    origin: "*", 
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  })
+);
+
 app.use(express.json());
 
 // Test Route
