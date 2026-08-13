@@ -1,5 +1,5 @@
 import express from "express";
-import User from "../models/User.js"; // 👈 Make sure path matches your User model file location
+import User from "../models/User.js"; // Make sure the path matches your User model file location
 
 const router = express.Router();
 
@@ -50,12 +50,48 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login API
-router.post("/login", (req, res) => {
-  res.json({
-    success: true,
-    message: "Login API working"
-  });
+// ✅ FIXED: Login API - Authenticates user and returns actual user data
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // 1. Find user in MongoDB by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "User not found with this email" 
+      });
+    }
+
+    // 2. Check if password matches
+    if (user.password !== password) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid password" 
+      });
+    }
+
+    // 3. Send back success response with user info (so frontend can display name)
+    res.status(200).json({
+      success: true,
+      message: "Login successful!",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+
+  } catch (error) {
+    console.error("Login Error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Server error during login",
+      error: error.message 
+    });
+  }
 });
 
 export default router;

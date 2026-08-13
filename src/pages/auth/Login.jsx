@@ -37,9 +37,15 @@ const Login = () => {
       console.log('Initiating login API call...');
       const result = await login(formData.email, formData.password, rememberMe);
 
-      // Check if login succeeded and navigate to dashboard or home page
+      // Check if login succeeded
       if (result && (result.success || result.status === 200 || result.token)) {
-        navigate('/dashboard'); // Change '/dashboard' to your home/landing route
+        
+        // ✅ SAVE USER DATA TO LOCALSTORAGE SO DASHBOARD CAN ACCESS THE NAME
+        if (result.user) {
+          localStorage.setItem('user', JSON.stringify(result.user));
+        }
+
+        navigate('/dashboard'); // Redirect to dashboard page
       } else {
         setError(result?.error || result?.message || 'Login failed');
       }

@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { getJobs } from '../../services/jobService';
 import { getCompanies } from '../../services/companyService';
-import { getApplications } from '../../services/applicationService'; // Import the service
+import { getApplications } from '../../services/applicationService';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -12,8 +12,18 @@ const Dashboard = () => {
   const [userCount, setUserCount] = useState(0);
   const [applications, setApplications] = useState([]);
 
-  // Extract nested user data safely if backend returned { user: { ... } } or { data: { ... } }
-  const currentUser = user?.user || user?.data || user;
+  // ✅ Read saved user from localStorage as fallback if AuthContext user isn't loaded
+  const savedLocalUser = (() => {
+    try {
+      const local = localStorage.getItem("user");
+      return local ? JSON.parse(local) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  // Extract nested user data safely (prioritize AuthContext, fallback to localStorage)
+  const currentUser = user?.user || user?.data || user || savedLocalUser;
   const userRole = (currentUser?.role || 'candidate').toLowerCase();
   const userName = currentUser?.name || currentUser?.username || currentUser?.email?.split('@')[0] || "User";
 
@@ -24,7 +34,7 @@ const Dashboard = () => {
         const jobs = await getJobs();
         const companies = await getCompanies();
 
-        // Fetch applications safely using the current user object (has proper ID guard clauses now)
+        // Fetch applications safely using the current user object
         if (currentUser) {
           const userApps = await getApplications(currentUser);
           setApplications(Array.isArray(userApps) ? userApps : []);
@@ -62,7 +72,7 @@ const Dashboard = () => {
     };
 
     loadData();
-  }, [user]); // Re-run if user object updates/loads asynchronously
+  }, [user]);
 
   const renderCandidateDashboard = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
