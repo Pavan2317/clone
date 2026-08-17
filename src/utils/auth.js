@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Change this base URL to match your backend port (e.g., http://localhost:5000/api)
-const API_BASE_URL = 'http://localhost:5000/api/auth';
+// Change this base URL to match your backend port (e.g., https://backend-qwbt.onrender.com/api)
+const API_BASE_URL = 'https://backend-qwbt.onrender.com/api/auth';
 
 export const registerUser = async (userData) => {
   try {

@@ -47,7 +47,7 @@ const JobDetails = () => {
         status: 'pending',
       };
 
-      await axios.post('http://localhost:5000/api/applications', applicationPayload);
+      await axios.post('https://backend-qwbt.onrender.com/api/applications', applicationPayload);
 
       setApplied(true);
       alert('Application successfully saved to database!');

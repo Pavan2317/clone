@@ -7,7 +7,7 @@ async function main() {
       if (ep === '/api/auth/login') {
         continue; // POST only
       }
-      const r = await fetch('http://localhost:5000' + ep);
+      const r = await fetch('https://backend-qwbt.onrender.com' + ep);
       const j = await r.json();
       const keys = Object.keys(j);
       let summary = j.message || j.success;

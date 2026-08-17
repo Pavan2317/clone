@@ -14,7 +14,7 @@ const ApplicationDetails = () => {
     const fetchApplication = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/applications/${id}`
+          `https://backend-qwbt.onrender.com/api/applications/${id}`
         );
         setData(res.data);
       } catch (err) {

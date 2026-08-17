@@ -2,7 +2,7 @@ import axios from "axios";
 import { getItem, setItem } from "../utils/storage";
 
 // Update port 5000 if your backend runs on a different port
-const API_URL = "http://localhost:5000/api/applications";
+const API_URL = "https://backend-qwbt.onrender.com/api/applications";
 
 // Helper function to attach JWT Token to requests safely using storage utility
 const getAuthHeader = () => {
