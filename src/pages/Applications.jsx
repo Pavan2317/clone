@@ -15,6 +15,9 @@ const Applications = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const userRole = user?.role?.toLowerCase() || "";
+  const isCandidate = userRole === "candidate" || userRole === "applicant";
+
   useEffect(() => {
     const fetchApplications = async () => {
       try {
@@ -84,7 +87,7 @@ const Applications = () => {
       <div className="min-h-screen bg-white px-10 py-8">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold text-gray-900 mb-6">
-            Applications
+            My Applications
           </h1>
           <div className="text-gray-500">Loading applications...</div>
         </div>
@@ -92,14 +95,64 @@ const Applications = () => {
     );
   }
 
+  // CANDIDATE VIEW (Cards layout or candidate-specific layout)
+  if (isCandidate) {
+    return (
+      <div className="min-h-screen bg-gray-50 px-10 py-8">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <h1 className="text-3xl font-bold text-gray-900">My Applications</h1>
+          
+          {error && (
+            <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
+          <div className="grid gap-4">
+            {filteredApplications.length === 0 ? (
+              <div className="bg-white p-6 rounded-lg border border-gray-200 text-center text-gray-500">
+                You haven't applied to any jobs yet.
+              </div>
+            ) : (
+              filteredApplications.map((app) => {
+                const appId = app._id || app.id;
+                const jobTitle = app.title || app.jobTitle || app.job?.title || app.job || "Job Title";
+                const companyName = app.company || app.companyName || app.company?.companyName || "Company";
+                const currentStatus = app.status || "Pending";
+
+                return (
+                  <div key={appId} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">{jobTitle}</h3>
+                      <p className="text-sm text-gray-600">{companyName}</p>
+                      <span className="inline-block mt-2 px-3 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
+                        Status: {currentStatus}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => navigate(`/applications/${appId}`)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-4 py-2 rounded shadow-sm transition-colors"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ADMIN / COMPANY VIEW (Table layout with status changing)
   return (
     <div className="min-h-screen bg-white px-10 py-8">
       <div className="max-w-6xl mx-auto space-y-6">
         <h1 className="text-3xl font-bold text-gray-900">
-          Applications
+          Applications Dashboard
         </h1>
 
-        {/* Search Bar */}
         <div className="w-full max-w-md">
           <input
             type="text"
@@ -116,7 +169,6 @@ const Applications = () => {
           </div>
         )}
 
-        {/* Table layout */}
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -132,10 +184,7 @@ const Applications = () => {
               <tbody className="divide-y divide-gray-200 text-sm">
                 {filteredApplications.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan="5"
-                      className="py-12 text-center text-gray-500"
-                    >
+                    <td colSpan="5" className="py-12 text-center text-gray-500">
                       No applications found.
                     </td>
                   </tr>
@@ -158,25 +207,14 @@ const Applications = () => {
                       "Candidate";
 
                     return (
-                      <tr
-                        key={appId}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="py-4 px-6 text-gray-900">
-                          {jobTitle}
-                        </td>
-                        <td className="py-4 px-6 text-gray-800">
-                          {companyName}
-                        </td>
-                        <td className="py-4 px-6 text-gray-800">
-                          {candidateName}
-                        </td>
+                      <tr key={appId} className="hover:bg-gray-50 transition-colors">
+                        <td className="py-4 px-6 text-gray-900">{jobTitle}</td>
+                        <td className="py-4 px-6 text-gray-800">{companyName}</td>
+                        <td className="py-4 px-6 text-gray-800">{candidateName}</td>
                         <td className="py-4 px-6">
                           <select
                             value={currentStatus}
-                            onChange={(e) =>
-                              handleStatusChange(appId, e.target.value)
-                            }
+                            onChange={(e) => handleStatusChange(appId, e.target.value)}
                             className="bg-white border border-gray-200 text-gray-800 text-xs rounded px-2.5 py-1.5 focus:outline-none focus:border-gray-400 cursor-pointer shadow-sm"
                           >
                             <option value="Pending">Pending</option>
