@@ -15,19 +15,34 @@ export const getApplications = async (req, res) => {
   }
 };
 
-// Create application
+// Create application (WITH DUPLICATE CHECK)
 export const createApplication = async (req, res) => {
   try {
-    console.log("BODY:", req.body);
+    const { jobId, candidateId, companyId, company, jobTitle, candidateName, status } = req.body;
+
+    // Check if the candidate has already applied for this job
+    const existingApplication = await Application.findOne({
+      jobId: jobId,
+      $or: [
+        { candidateId: candidateId },
+        { "candidateId._id": candidateId }
+      ]
+    });
+
+    if (existingApplication) {
+      return res.status(400).json({
+        message: "You have already applied for this job."
+      });
+    }
 
     const application = new Application({
-      jobId: req.body.jobId,
-      candidateId: req.body.candidateId,
-      companyId: req.body.companyId || req.body.company || "N/A",
-      jobTitle: req.body.jobTitle,
-      company: req.body.company,
-      candidateName: req.body.candidateName,
-      status: req.body.status || "pending",
+      jobId,
+      candidateId,
+      companyId: companyId || company || "N/A",
+      jobTitle,
+      company,
+      candidateName,
+      status: status || "pending",
     });
 
     await application.save();
@@ -61,13 +76,17 @@ export const getApplicationById = async (req, res) => {
   }
 };
 
-// Get applications by candidate ID
+// Get applications by candidate ID (FIXED FILTER QUERY)
 export const getApplicationsByCandidateId = async (req, res) => {
   try {
     const candidateId = req.params.candidateId;
 
     const applications = await Application.find({
-      $or: [{ candidateId: candidateId }, { "candidateId._id": candidateId }],
+      $or: [
+        { candidateId: candidateId },
+        { "candidateId._id": candidateId },
+        { candidateId: String(candidateId) }
+      ]
     })
       .populate("jobId")
       .populate("companyId");
@@ -79,12 +98,11 @@ export const getApplicationsByCandidateId = async (req, res) => {
   }
 };
 
-// Get applications by company ID (FIXED FIELD QUERY)
+// Get applications by company ID
 export const getApplicationsByCompanyId = async (req, res) => {
   try {
     const companyId = req.params.companyId;
 
-    // Checks companyId as well as company string for maximum compatibility
     const applications = await Application.find({
       $or: [{ companyId: companyId }, { company: companyId }],
     })
@@ -104,8 +122,7 @@ export const updateApplicationStatus = async (req, res) => {
     const { status } = req.body;
     const { id } = req.params;
 
-    // Validate allowed status values
-    const validStatuses = ["Pending", "Reviewed", "Accepted", "Rejected"];
+    const validStatuses = ["Pending", "Reviewed", "Accepted", "Rejected", "pending"];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid status value" });
     }
@@ -113,7 +130,7 @@ export const updateApplicationStatus = async (req, res) => {
     const updatedApplication = await Application.findByIdAndUpdate(
       id,
       { status },
-      { new: true } // Returns the updated document
+      { new: true }
     );
 
     if (!updatedApplication) {

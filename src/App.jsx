@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleBasedRoute from "./components/RoleBasedRoute";
 
@@ -37,7 +39,7 @@ import EditCompany from "./pages/companies/EditCompany";
 import CompanyDetails from "./pages/companies/CompanyDetails";
 
 // Applications
-import Applications from "./pages/applications/Applications";
+import Applications from "./pages/Applications";
 import ApplicationDetails from "./pages/applications/ApplicationDetails";
 
 function Home({ setSearch }) {
@@ -68,6 +70,9 @@ function App() {
 
   return (
     <div className="w-full min-h-screen overflow-x-hidden bg-white dark:bg-gray-950 transition-colors duration-300">
+      {/* Toast notifications container */}
+      <Toaster position="top-right" reverseOrder={false} />
+
       <Navbar />
 
       <Routes>
@@ -147,10 +152,20 @@ function App() {
           }
         />
 
+        {/* Alias route to ensure /companies/manage links work seamlessly */}
+        <Route
+          path="/companies/manage"
+          element={
+            <ProtectedRoute>
+              <Companies />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/companies/add"
           element={
-            <RoleBasedRoute allowedRoles={["admin"]}>
+            <RoleBasedRoute allowedRoles={["admin", "company"]}>
               <AddCompany />
             </RoleBasedRoute>
           }
@@ -159,7 +174,7 @@ function App() {
         <Route
           path="/companies/edit/:id"
           element={
-            <RoleBasedRoute allowedRoles={["admin"]}>
+            <RoleBasedRoute allowedRoles={["admin", "company"]}>
               <EditCompany />
             </RoleBasedRoute>
           }
@@ -174,7 +189,7 @@ function App() {
           }
         />
 
-{/* Applications */}
+        {/* Applications */}
         <Route
           path="/applications"
           element={
@@ -198,3 +213,4 @@ function App() {
 }
 
 export default App;
+

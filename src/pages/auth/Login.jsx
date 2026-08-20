@@ -37,12 +37,15 @@ const Login = () => {
       console.log('Initiating login API call...');
       const result = await login(formData.email, formData.password, rememberMe);
 
-      // Check if login succeeded
-      if (result && (result.success || result.status === 200 || result.token)) {
+      // Check if login succeeded across multiple response formats
+      if (result && (result.success || result.status === 200 || result.token || result.user || result._id)) {
         
-        // ✅ SAVE USER DATA TO LOCALSTORAGE SO DASHBOARD CAN ACCESS THE NAME
-        if (result.user) {
-          localStorage.setItem('user', JSON.stringify(result.user));
+        // Extract user object flexibly depending on backend wrapper
+        const userObj = result.user || result.data?.user || result.data || result;
+
+        // Ensure user data with _id/id is saved to localStorage
+        if (userObj) {
+          localStorage.setItem('user', JSON.stringify(userObj));
         }
 
         navigate('/dashboard'); // Redirect to dashboard page

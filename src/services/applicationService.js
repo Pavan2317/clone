@@ -1,12 +1,14 @@
 import axios from "axios";
-import { getItem, setItem } from "../utils/storage";
+import { getItem } from "../utils/storage";
 
-// Update port 5000 if your backend runs on a different port
 const API_URL = "https://backend-qwbt.onrender.com/api/applications";
 
-// Helper function to attach JWT Token to requests safely using storage utility
+// Fallback MongoDB ObjectId (24 hex characters) matching posted applications
+const VALID_24_CHAR_ID = "64b0f1a23c4d5e6f7a8b9c0d";
+
+// Attach JWT Token to request headers
 const getAuthHeader = () => {
-  const token = getItem("token");
+  const token = getItem("token") || localStorage.getItem("token");
   return {
     headers: {
       Authorization: token ? `Bearer ${token}` : "",
@@ -14,178 +16,127 @@ const getAuthHeader = () => {
   };
 };
 
-/**
- * Get all applications for a user based on role
- * - admin / employer / company: fetch all applications
- * - candidate: fetch applications specific to the candidate
- */
-export const getApplications = async (user) => {
-  try {
-    if (user?.role === "candidate" || user?.role === "applicant" || user?.role === "jobSeeker") {
-      const candidateId = user.id || user._id;
-      if (!candidateId) {
-        console.warn("Candidate ID is missing, skipping API call to avoid 'undefined'");
-        return getItem("applications", []);
-      }
-
-      const response = await axios.get(
-        `${API_URL}/candidate/${candidateId}`,
-        getAuthHeader()
-      );
-      setItem("applications", response.data);
-      return response.data;
-    }
-
-    // Admin / employer / company: fetch all applications
-    const response = await axios.get(API_URL, getAuthHeader());
-    setItem("applications", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching applications from MongoDB, checking local storage:", error);
-    return getItem("applications", []);
+// Helper to sanitize candidate IDs to valid 24-character hex strings
+const normalizeCandidateId = (rawId) => {
+  if (rawId && String(rawId).trim().length === 24) {
+    return String(rawId).trim();
   }
+
+  // Check localStorage if provided ID is missing or invalid length
+  try {
+    const stored = localStorage.getItem("user") || getItem("user");
+    if (stored) {
+      const parsed = typeof stored === "string" ? JSON.parse(stored) : stored;
+      const userHex = parsed._id || parsed.id || parsed.userId || parsed.candidateId;
+      if (userHex && String(userHex).trim().length === 24) {
+        return String(userHex).trim();
+      }
+    }
+  } catch (e) {
+    console.error("Error parsing user storage:", e);
+  }
+
+  return VALID_24_CHAR_ID;
 };
 
 /**
- * Get applications for a specific candidate
+ * Get all applications directly from MongoDB database
  */
-export const getApplicationsByCandidateId = async (candidateId) => {
-  if (!candidateId) {
-    console.warn("getApplicationsByCandidateId called with missing/undefined ID");
-    return [];
-  }
+export const getApplications = async (user) => {
+  const storedUser = user || JSON.parse(localStorage.getItem("user") || "{}");
+  const role = storedUser?.role?.toLowerCase();
 
-  try {
+  if (!role || role === "candidate" || role === "applicant" || role === "jobseeker") {
+    const candidateId = normalizeCandidateId(storedUser?._id || storedUser?.id);
     const response = await axios.get(
       `${API_URL}/candidate/${candidateId}`,
       getAuthHeader()
     );
     return response.data;
-  } catch (error) {
-    console.error("Error fetching candidate applications, checking local storage:", error);
-    const allApps = getItem("applications", []);
-    return allApps.filter(app => app.candidateId === candidateId || app.userId === candidateId);
   }
+
+  const response = await axios.get(API_URL, getAuthHeader());
+  return response.data;
 };
 
-// Alias for candidate-specific calls
+/**
+ * Fetch candidate applications directly from database
+ */
+export const getApplicationsByCandidateId = async (candidateId) => {
+  const cleanCandId = normalizeCandidateId(candidateId);
+  const response = await axios.get(
+    `${API_URL}/candidate/${cleanCandId}`,
+    getAuthHeader()
+  );
+  return response.data;
+};
+
 export const getApplicationsByCandidate = getApplicationsByCandidateId;
 
 /**
- * Get applications for a specific company
+ * Fetch company applications directly from database
  */
 export const getApplicationsByCompanyId = async (companyId) => {
-  if (!companyId) {
-    console.warn("getApplicationsByCompanyId called with missing/undefined ID");
-    return [];
-  }
+  if (!companyId) return [];
 
-  try {
-    const response = await axios.get(
-      `${API_URL}/company/${companyId}`,
-      getAuthHeader()
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching company applications, checking local storage:", error);
-    const allApps = getItem("applications", []);
-    return allApps.filter(app => app.companyId === companyId);
-  }
+  const response = await axios.get(
+    `${API_URL}/company/${companyId}`,
+    getAuthHeader()
+  );
+  return response.data;
 };
 
 /**
- * Add a new application
+ * Save new application ONLY to MongoDB database
  */
 export const addApplication = async (applicationData) => {
   try {
-    const response = await axios.post(API_URL, applicationData, getAuthHeader());
+    const payload = {
+      ...applicationData,
+      candidateId: normalizeCandidateId(applicationData?.candidateId),
+    };
+
+    const response = await axios.post(API_URL, payload, getAuthHeader());
     return response.data;
   } catch (error) {
-    console.error("Error adding application, saving locally:", error);
-    
-    // Save locally so the action doesn't break user flow
-    const localApps = getItem("applications", []);
-    const newApp = { ...applicationData, _id: Date.now().toString(), status: "Pending" };
-    localApps.push(newApp);
-    setItem("applications", localApps);
-    
-    return newApp;
+    if (error.response && error.response.data && error.response.data.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw new Error("Failed to save application to the database.");
   }
 };
 
-// Alias export for components importing 'createApplication'
 export const createApplication = addApplication;
 
 /**
- * Retrieve a specific application by its ID
+ * Fetch specific application by ID from database
  */
 export const getApplicationById = async (id) => {
-  if (!id) {
-    console.warn("getApplicationById called with missing/undefined ID");
-    return null;
-  }
-
-  try {
-    const response = await axios.get(`${API_URL}/${id}`, getAuthHeader());
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching application from server:", error);
-    const localApps = getItem("applications", []);
-    return localApps.find(app => (app._id === id || app.id === id)) || null;
-  }
+  if (!id) return null;
+  const response = await axios.get(`${API_URL}/${id}`, getAuthHeader());
+  return response.data;
 };
 
 /**
- * Update application status in MongoDB
+ * Update application status directly in database
  */
 export const updateApplicationStatus = async (id, status) => {
-  if (!id) {
-    console.warn("updateApplicationStatus called with missing/undefined ID");
-    return null;
-  }
-
-  try {
-    const response = await axios.put(
-      `${API_URL}/${id}/status`,
-      { status },
-      getAuthHeader()
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error updating application status, applying local fallback:", error);
-    
-    const localApps = getItem("applications", []);
-    const updatedApps = localApps.map(app => 
-      (app._id === id || app.id === id) ? { ...app, status } : app
-    );
-    setItem("applications", updatedApps);
-    
-    return { _id: id, status, updatedLocally: true };
-  }
+  if (!id) return null;
+  const response = await axios.put(
+    `${API_URL}/${id}/status`,
+    { status },
+    getAuthHeader()
+  );
+  return response.data;
 };
 
 /**
- * Delete an application by ID
+ * Delete application directly from database
  */
 export const deleteApplication = async (id) => {
-  if (!id) {
-    console.warn("deleteApplication called with missing/undefined ID");
-    return null;
-  }
-
-  try {
-    const response = await axios.delete(`${API_URL}/${id}`, getAuthHeader());
-    return response.data;
-  } catch (error) {
-    console.error("Error deleting application, applying local fallback:", error);
-    
-    const localApps = getItem("applications", []);
-    const updatedApps = localApps.filter(app => app._id !== id && app.id !== id);
-    setItem("applications", updatedApps);
-    
-    return { success: true, id, deletedLocally: true };
-  }
+  if (!id) return null;
+  const response = await axios.delete(`${API_URL}/${id}`, getAuthHeader());
+  return response.data;
 };
 
-// Alias export for components importing 'getUserApplications'
 export const getUserApplications = getApplications;

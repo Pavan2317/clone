@@ -1,114 +1,133 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
-import { getJobById } from '../../services/jobService';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import ApplyModal from "../../components/ApplyModal";
+import { getJobById } from "../../services/jobService";
+import { getApplicationsByCandidateId, addApplication } from "../../services/applicationService";
 
 const JobDetails = () => {
   const { id } = useParams();
   const [job, setJob] = useState(null);
+  const [hasApplied, setHasApplied] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [applied, setApplied] = useState(false);
 
-  // Get current logged-in user session
-  const currentUser = JSON.parse(localStorage.getItem('user')) || {};
-  
-  // Check user role (adjust "company" or "employer" based on your auth structure)
-  const isCompany = currentUser.role === 'company' || currentUser.role === 'employer';
-  const isCandidate = currentUser.role === 'candidate' || currentUser.role === 'applicant' || !currentUser.role;
+  const VALID_24_CHAR_ID = "64b0f1a23c4d5e6f7a8b9c0d";
+
+  const getCandidateId = () => {
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const candidateId = parsed._id || parsed.id || parsed.userId || parsed.candidateId;
+        if (candidateId && candidateId.length === 24) return candidateId;
+      }
+    } catch (e) {
+      console.error("Error reading localStorage user:", e);
+    }
+    return VALID_24_CHAR_ID;
+  };
 
   useEffect(() => {
-    const fetchJob = async () => {
+    const fetchJobAndApplicationStatus = async () => {
       try {
-        if (id) {
-          const foundJob = await getJobById(id);
-          setJob(foundJob);
+        setLoading(true);
+        const jobData = await getJobById(id);
+        setJob(jobData);
+
+        const currentUserId = getCandidateId();
+        if (currentUserId) {
+          const userApps = await getApplicationsByCandidateId(currentUserId);
+          
+          // Check if candidate has already applied to this specific job ID
+          const alreadyApplied = Array.isArray(userApps) && userApps.some((app) => {
+            const appliedJobId = app.jobId?._id || app.jobId || app.job;
+            return String(appliedJobId) === String(id);
+          });
+
+          setHasApplied(alreadyApplied);
         }
       } catch (err) {
-        console.error('Error loading job details:', err);
+        console.error("Error checking application status:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchJob();
+    fetchJobAndApplicationStatus();
   }, [id]);
 
-  const handleApply = async () => {
-    if (!job) return;
+  const handleApplySubmit = async (formData) => {
+    // Block duplicate submission attempt
+    if (hasApplied) {
+      toast.error("You have already applied for this job!");
+      setIsModalOpen(false);
+      return;
+    }
+
+    const validCandidateId = getCandidateId();
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
 
     try {
-      const applicationPayload = {
-        jobId: job._id || job.id || id,
-        candidateId: currentUser._id || currentUser.id || String(Date.now()),
-        companyId: job.companyId || 'N/A',
-        jobTitle: job.title || job.jobTitle || 'Job Title',
-        company: job.company || 'Company Name',
-        candidateName: currentUser.name || currentUser.username || 'Candidate',
-        status: 'pending',
+      const payload = {
+        jobId: id,
+        candidateId: validCandidateId,
+        candidateName: formData.fullName || storedUser.name || "Pavan",
+        jobTitle: job?.title || "Frontend Devloper",
+        company: job?.company || "Company",
+        email: formData.email || storedUser.email || "pavan@gmail.com",
+        phone: formData.phone || "1234567890",
+        resume: formData.resume || "https://example.com/resume.pdf",
       };
 
-      await axios.post('https://backend-qwbt.onrender.com/api/applications', applicationPayload);
-
-      setApplied(true);
-      alert('Application successfully saved to database!');
+      await addApplication(payload);
+      toast.success("Application submitted successfully!");
+      setHasApplied(true); // Locks button permanently for this session
+      setIsModalOpen(false);
     } catch (error) {
-      console.error('Failed to save application:', error);
-      alert('Error submitting application to MongoDB.');
+      console.error("Submit error:", error);
+      toast.error(error?.response?.data?.message || error?.message || "Failed to submit application");
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading...</div>;
-  if (!job) return <div className="p-8 text-center text-red-500">Job not found.</div>;
+  if (loading) return <div className="p-10 text-center dark:text-white">Loading...</div>;
+  if (!job) return <div className="p-10 text-center dark:text-white">Job not found.</div>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md mt-6">
-      <div className="flex justify-between items-center mb-6">
-        <Link to="/jobs-list" className="text-indigo-600 hover:underline">
-          ← Back to Jobs
-        </Link>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
+      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold dark:text-white">{job.title}</h1>
 
-        {/* Hide Apply button if logged in as a Company */}
-        {isCompany ? (
-          <span className="bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 px-4 py-2 rounded-md text-sm font-medium">
-            Employer View
-          </span>
-        ) : (
-          <button
-            onClick={handleApply}
-            disabled={applied}
-            className={`px-6 py-2.5 rounded-md font-semibold text-white transition duration-200 ${
-              applied
-                ? 'bg-green-600 cursor-not-allowed'
-                : 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
-            }`}
-          >
-            {applied ? '✓ Applied' : 'Apply Now'}
-          </button>
+          {hasApplied ? (
+            <button
+              disabled
+              className="bg-gray-400 text-white font-medium px-5 py-2 rounded cursor-not-allowed opacity-80"
+            >
+              ✓ Applied
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded transition"
+            >
+              Apply Now
+            </button>
+          )}
+        </div>
+
+        <p className="text-gray-600 dark:text-gray-300 mb-2"><strong>Company:</strong> {job.company}</p>
+        <p className="text-gray-600 dark:text-gray-300 mb-2"><strong>Location:</strong> {job.location}</p>
+        <p className="text-gray-600 dark:text-gray-300 mb-4"><strong>Salary:</strong> {job.salary}</p>
+        <div className="text-gray-700 dark:text-gray-300 mt-4">{job.description}</div>
+
+        {!hasApplied && (
+          <ApplyModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onSubmit={handleApplySubmit}
+          />
         )}
-      </div>
-
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 capitalize">
-        {job.title || job.jobTitle}
-      </h1>
-      <p className="text-lg text-indigo-600 dark:text-indigo-400 font-medium mb-4">
-        {job.company}
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-md">
-        <div><strong>Location:</strong> {job.location || 'N/A'}</div>
-        <div><strong>Type:</strong> {job.type || 'Full-time'}</div>
-        <div><strong>Salary:</strong> {job.salary || 'Not specified'}</div>
-      </div>
-
-      <hr className="my-6 border-gray-200 dark:border-gray-700" />
-
-      <div>
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">
-          Job Description
-        </h2>
-        <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed">
-          {job.description || 'No description provided.'}
-        </p>
       </div>
     </div>
   );
